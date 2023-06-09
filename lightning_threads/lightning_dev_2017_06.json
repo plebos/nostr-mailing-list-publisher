@@ -1,0 +1,61 @@
+[
+    {
+        "title": "[Lightning-dev] [RFC] Lightning invoice/payment format draft",
+        "thread_messages": [
+            {
+                "author": "Rusty Russell",
+                "date": "2017-06-01T01:28:20",
+                "message_text_only": "Hi all,\n\n        There's a pull request for a lightning payment format which I'd\nlove wider review on.  It's bech32 encoded, with optional parts tagged:\n\n        https://github.com/lightningnetwork/lightning-rfc/pull/183\n\nThere's an implementation with a less formal description here, too:\n\n        https://github.com/rustyrussell/lightning-payencode\n\nExample:\n        Send 2500 microbitcoin using payment hash 00010203040506...0102 to me\n        @03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad\n        within 1 minute from now (Tue 30 May 12:17:36 UTC 2017):\n\n        lnbc2500u1qpvj6chqqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq5xysxxatsyp3k7enxv4jsxqz8slk6hqew9z5kzxyk33ast248j3ykmu3wncvgtgk0ewf5c6qnhen45vr43fmtzsh02j6ns096tcpfga0yfykc79e5uw3gh5ltr96q00zqppy6lfy\n\nThanks!\nRusty."
+            },
+            {
+                "author": "ZmnSCPxj",
+                "date": "2017-06-01T03:42:21",
+                "message_text_only": "Good morning Rusty,\n\nThe fact that amount is optional, and the separator character between human-readable and data is the character \"1\", may mean some trouble with parsing of the optional amount.\n\nCurrently, the version is 0, which translates to the character \"q\" appearing after \"1\". So 1q is obviously not an amount and is known to start the data part.\n\nHowever, what happens when we decide to upgrade, and version is now 1, translating to character \"p\"?\n\nIf version 1 of invoice is avalialble, does a payment starting with lnbc1p .... indicate a 1 pico-bitcoin payment, or an arbitrary payment to a version-1 data part?\n\nOr is amount not allowed to have character \"1\"? It seems a strange limitation if we impose this...\n\nOr do I mistake my understanding of bech32?\n\nAlternatively we can just fix the first 5 bits to be 0 (so \"1q\" is an unambiguous separator between human-readable and data parts) and provide the version by other means, such as changing lnbc to ln2bc or so on...\n\n> simply reused here even though its 6-character checksum is optimized\n> for human errors, which are unlikely given the length of lightning\n> invoices.\n\nAt first read, this seems wrong. My understanding is that lightning invoices are longer than segwit addresses in bech32, so human error is more likely.\n\nOf course, it seems that the intended meaning is really \"lightning invoices are so long that it is unlikely humans will enter it by hand, so human errors are unlikely compared to QR reader errors etc.\" so perhaps better reworded as such.\n\nRegards,\nZmnSCPxj\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/lightning-dev/attachments/20170531/80a1f0d2/attachment.html>"
+            },
+            {
+                "author": "ZmnSCPxj",
+                "date": "2017-06-01T03:48:46",
+                "message_text_only": "Good morning,\n\n>Or do I mistake my understanding of bech32?\n\nLooking again at bech32 spec, yes, my understanding is wrong: the character \"1\" is not allowed in the data part, so the last \"1\" digit in the bech32 string is unambiguously the separator between the human-readable and data parts, please ignore me.\n\nRegards,\nZmnSCPxj\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/lightning-dev/attachments/20170531/2f45c053/attachment.html>"
+            },
+            {
+                "author": "ZmnSCPxj",
+                "date": "2017-06-01T05:25:57",
+                "message_text_only": "Good morning,\n\nAt line 20 of Bolt#11 there is a doubled \"than\".\n\nI cannot find a good description of how the tagged `d` field is encoded, and it seems, the examples have no `d` field. I assume it is in ASCII (or UTF8?) and packed into 5-bit packets somehow (the given reference code appears to encode that way), but I think a description of how it is intended to be encoded should be part of the BOLT.\n\nRegards,\nZmnSCPxj\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/lightning-dev/attachments/20170601/9eb33f15/attachment.html>"
+            }
+        ],
+        "thread_summary": {
+            "title": "Lightning invoice/payment format draft",
+            "categories": [
+                "Lightning-dev",
+                "RFC"
+            ],
+            "authors": [
+                "Rusty Russell",
+                "ZmnSCPxj"
+            ],
+            "messages_count": 4,
+            "total_messages_chars_count": 3661
+        }
+    },
+    {
+        "title": "[Lightning-dev] Composing a transaction of many small transactions",
+        "thread_messages": [
+            {
+                "author": "CJP",
+                "date": "2017-06-13T19:28:03",
+                "message_text_only": "Hi,\n\n=======\nProblem\n=======\n\nOne major vulnerability of the Lightning network is that, if someone\nwants to perform a DoS attack on the network, that possible for the\nattacker by sending many large transactions to himself, over a long\nroute, and letting them time out (never reveal the payment pre-image).\nNobody (including the attacker) gains or loses any funds, but a lot of\nfunds get locked up, and the total cost of lost opportunity to innocent\nnodes is a lot higher than that of the attacker.\n\nIn Milan, we came to a solution for this DoS mode, where nodes require\neither a fast commit or roll-back within a short amount of time (say 30\nseconds), or a proof that another channel was closed. This increases the\ncost for the attacker with the cost of closing a channel.\n\nI've always disliked this approach a bit, since a \"proof that another\nchannel was closed\" can only be accepted by other nodes in the route if\nall those nodes can understand such proof; this means that if a route\nhops over channels on different block chains (e.g. alt coins or side\nchains), or different channel designs, some nodes have to understand all\nthese varieties. This limits freedom of node pairs to join the network\nwith new / unusual channels in a useful way.\n\nSo far, I had accepted this, as the DoS-protection really seemed\nnecessary.\n\n================\nAnother approach\n================\n\nLast week, Michiel de Jong (CC'ed) presented Interledger at a local\ncryptocurrency meet-up here in Delft. Since Interledger's core feature\nis the routing between different 'ledgers' (including block chains, but\nalso banks), using HTLCs on different hops in the same way as Lightning,\nI asked him how they were planning to avoid this DoS mode.\n\nHis answer was basically that transactions were being sent in really\nsmall parts at a time, so that, at any given point in time, only a small\namount would be locked. If it turns out to be locked for a long time,\nthat would not be a problem since it's only a small amount. I suggested\nthat, if you do transactions this way, you might as well just add the\nlocked amount to the channel transaction fee, and thereby avoid the\ncomplexity of the HTLC.\n\n=============\nWill it work?\n=============\n\nInitially, my concern with splitting a tx into many small parts was that\nit creates the possibility that only a part of the funds gets\ntransferred. I now think that, in most cases, that will not be an issue,\nsince usually a certain amount of trust is already required between the\nendpoints of a transaction, e.g. when you pay for physical goods, you\nhave to trust they will be delivered. Based on the same trust, the\nendpoints of the transaction can cooperate to resolve the situation,\ne.g. with an attempt to refund through Lightning, or by paying through a\nnew channel.\n\nBut: does this really resolve the DoS attack mode? I suppose that, after\nlocking funds in one small transaction, an attacker can easily lock\nfunds in another small transaction, and so on; in the end locking up the\nsame amount of funds for the same amount of time as in the original\nattack. Once you detect that one small transaction doesn't unlock, you\nhave to somehow stop all subsequent transactions from the attacker.\n\nIf, on a channel-level, you just say \"I'll no longer accept any new\ntransactions as long as one transaction keeps being locked\", I think\nyou'll end up worse: it will allow an attacker to disable entire\nchannels (potentially very high-capacity channels) with very small\nattack funds, for all users, for the same lock time. So, to prevent\nthis, you have to distinguish the attacker from regular users; this is\ndifficult in a network where the identity of source and destination are\nprotected , e.g. by Sphinx routing.\n\n**Maybe this is where Lightning and Interledger are different? I don't\nknow enough about Interledger.**\n\n==========\nSolutions?\n==========\n\nMaybe this can be resolved by requiring nodes to \"unwrap the onion\" in\ncase of a transaction that stays locked for too long? This would be\nmostly useful towards the payee, since the payee side is responsible for\neither showing the hash pre-image, or voluntarily canceling the\ntransaction. This could identify the \"closest non-cooperating node\" in\nthe route, but it wouldn't prevent the next locked transaction, since\nyou can't see in advance where an onion-routed transaction is going.\n\nThe next thing you could say is \"the last cooperating node in the route\n(a direct neighbor of the closest non-cooperating node) is no longer\nallowed to forward payments through the non-cooperating node\". Instead,\nhe has to immediately roll back any transaction that is aimed in that\ndirection.\n\nIf the otherwise cooperative node fails this rule, you mark it as\nnon-cooperative; the next time, the second-last cooperating node is no\nlonger allowed to forward payments through that node. This may continue\na couple of times, until a truly cooperative node follows all the rules,\nand attacker transactions are canceled in a fast an efficient manner by\nthat node.\n\nThis might work if there is only a single route on the network\n(line-shaped network), but I'm afraid an attacker can significantly\ndelay being blocked, by creating a part of the network under his own\ncontrol, which has at least one \"cooperating\" node as gateway, followed\nby large numbers of non-cooperating nodes, which are continuously being\nreplaced once old ones are being flagged as non-cooperating. Also, it\ncould force Lightning nodes to keep very large lists of which nodes have\nto block which of their neighbors.\n\nDo you have any thoughts on this?\n\nCJP\n\nPS.\nI couldn't find anything related to this in the Lightning RFC:\nhttps://github.com/lightningnetwork/lightning-rfc"
+            }
+        ],
+        "thread_summary": {
+            "title": "Composing a transaction of many small transactions",
+            "categories": [
+                "Lightning-dev"
+            ],
+            "authors": [
+                "CJP"
+            ],
+            "messages_count": 1,
+            "total_messages_chars_count": 5686
+        }
+    }
+]

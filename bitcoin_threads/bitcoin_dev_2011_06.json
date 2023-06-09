@@ -1,0 +1,844 @@
+[
+    {
+        "title": "[Bitcoin-development] Preparing 0.3.23-rc1 release",
+        "thread_messages": [
+            {
+                "author": "Jeff Garzik",
+                "date": "2011-06-12T02:23:58",
+                "message_text_only": "Current git HEAD has been proposed to Gavin & the rest of the dev team\nas 0.3.23-rc1.\n\nAs soon as Gavin gives his ACK, we have builds ready to upload.\n\nWe wanted this to be a fast, bugfix-only release.  The main focus was\nto deploy a fix for connections taking forever, due to a large portion\nof the network not accepting incoming TCP connections.\n\ngit shortlog for 0.3.23-rc1 (presuming Gavin's ACK):\nDean Lee (1):\n      Updated Chinese Simp translation\n\nDoug Huff (3):\n      Fix rfc1918 and rfc3927 compliance for ignoring non-internet-routable host\n      Add common temp files to .gitignore.\n      Demystify a few magic numbers.\n\nHan Lin Yap (2):\n      Added Swedish translation\n      Remove unused variable\n\nJeff Garzik (4):\n      Bump version to 0.3.23.\n      Reduce minimum TX fee for new transactions, to 0.0005.\n      Lower minimum relay TX fee to 0.0001 (from 0.0005) BTC.\n      Add minimal release process docs.\n\nMatt Corallo (1):\n      Fix CPU Usage bug when using -nolisten and have no connections.\n\nNils Schneider (1):\n      create keypool in LoadWallet()\n\nPieter Wuille (3):\n      Update transactions already in the wallet when rescanning.\n      Fix for small change outputs\n      Faster timeout when connecting\n\n\n-- \nJeff Garzik\nexMULTI, Inc.\njgarzik at exmulti.com"
+            }
+        ],
+        "thread_summary": {
+            "title": "Preparing 0.3.23-rc1 release",
+            "categories": [
+                "Bitcoin-development"
+            ],
+            "authors": [
+                "Jeff Garzik"
+            ],
+            "messages_count": 1,
+            "total_messages_chars_count": 1280
+        }
+    },
+    {
+        "title": "[Bitcoin-development] [ANN] Bitcoin v0.3.23 release candidate available",
+        "thread_messages": [
+            {
+                "author": "Jeff Garzik",
+                "date": "2011-06-12T04:48:10",
+                "message_text_only": "Win32, Linux and source releases for bitcoin v0.3.23rc1 have been uploaded to\nhttps://sourceforge.net/projects/bitcoin/files/Bitcoin/bitcoin-0.3.23/test/\n\nThis is another quick bugfix release, trying to deal with the influx\nof new bitcoin users.\n\nMain items of note:\n\n* P2P connect-to-node logic changed to reduce timeout a bit.  The\nnetwork saw a huge influx of new users, who do not permit incoming\nconnections.  This change is a short-term hack, to more quickly hunt\nfor useful P2P connections.  Better \"leaf node\" logic is in the works,\nbut this should let us limp along until then.\n* Transaction fee reduced to 0.0005 for new transactions (NOTE: free\ntransactions are, of course, still supported as they always were)\n* Client will relay transactions with fees as low as 0.0001 BTC\n\nFull git changelog:\n\nDean Lee (1):\n      Updated Chinese Simp translation\n\nDoug Huff (3):\n      Fix rfc1918 and rfc3927 compliance for ignoring non-internet-routable host\n      Add common temp files to .gitignore.\n      Demystify a few magic numbers.\n\nHan Lin Yap (2):\n      Added Swedish translation\n      Remove unused variable\n\nJeff Garzik (4):\n      Bump version to 0.3.23.\n      Reduce minimum TX fee for new transactions, to 0.0005.\n      Lower minimum relay TX fee to 0.0001 (from 0.0005) BTC.\n      Add minimal release process docs.\n\nMatt Corallo (1):\n      Fix CPU Usage bug when using -nolisten and have no connections.\n\nNils Schneider (1):\n      create keypool in LoadWallet()\n\nPieter Wuille (3):\n      Update transactions already in the wallet when rescanning.\n      Fix for small change outputs\n      Faster timeout when connecting\n\n\n-- \nJeff Garzik\nexMULTI, Inc.\njgarzik at exmulti.com"
+            }
+        ],
+        "thread_summary": {
+            "title": "Bitcoin v0.3.23 release candidate available",
+            "categories": [
+                "Bitcoin-development",
+                "ANN"
+            ],
+            "authors": [
+                "Jeff Garzik"
+            ],
+            "messages_count": 1,
+            "total_messages_chars_count": 1686
+        }
+    },
+    {
+        "title": "[Bitcoin-development] Bootstrapping via BitTorrent trackers",
+        "thread_messages": [
+            {
+                "author": "Christian Decker",
+                "date": "2011-06-13T08:55:04",
+                "message_text_only": "Hi all.\n\nJust wanted to carry the discussion from the Forum over to the dev-list.\n\nWe have quite a few bootstrapping mechanisms, starting with the overly\ncomplex (IMHO) IRC bootstrapping, which is often suspected as bot-activity.\nThen we have a few hardcoded nodes and some fallback nodes. I was wondering\nwhy we didn't adopt BitTorrent tracker bootstrapping until now? It's\nbasically all it does. Given a hash (SHA1 hash of the genesis bloc would be\nnice ^^) it gives you a list of other nodes with the same hash.\n\nGiven that there are quite a few open trackers (accepting and tracking any\nhash you throw at them) we could just decide to use 2-3 of those to\nbootstrap.\n\nThe downside would be that they return bencoded data, which has to be\ninterpreted first, but it's easier than implementing the IRC stuff, I think.\n\nAny comments?\n\nRegards,\nChris\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110613/099e3077/attachment.html>"
+            },
+            {
+                "author": "Jeff Garzik",
+                "date": "2011-06-13T09:09:53",
+                "message_text_only": "On Mon, Jun 13, 2011 at 4:55 AM, Christian Decker\n<decker.christian at gmail.com> wrote:\n> We have quite a few bootstrapping mechanisms, starting with the overly\n> complex (IMHO) IRC bootstrapping, which is often suspected as bot-activity.\n> Then we have a few hardcoded nodes and some fallback nodes. I was wondering\n> why we didn't adopt BitTorrent tracker bootstrapping until now? It's\n> basically all it does. Given a hash (SHA1 hash of the genesis bloc would be\n> nice ^^) it gives you a list of other nodes with the same hash.\n\nIt seems to offer few benefits over DNS seeding, while potentially\npotentially creating a vulnerable hot spot in the DHT.  Sybil attacks\non DHTs are well documented.\n\n-- \nJeff Garzik\nexMULTI, Inc.\njgarzik at exmulti.com"
+            },
+            {
+                "author": "Christian Decker",
+                "date": "2011-06-13T09:38:13",
+                "message_text_only": "Don't get me wrong, DNS Seeding is an excellent way to bootstrap via trusted\nnodes, I'm not trying to replace it.\nWhat I'm trying to get rid of is the IRC bootstrapping and the hardcoded\nnodes in the client, they're easy targets.\n\nBitTorrent trackers are used to handle several thousands of requests, so\nthey would probably scale well enough. I'm not even talking about using the\nDHT trackers, but using old fashioned HTTP based trackers. The fact that\neach bitcoin client would contact the tracker would make it very hard for an\nattacker to get bootstrapping clients to exclusively connect to his\ncompromised clients. I would say that using a tracker such as OpenBittorrent\nprovides the same advantages as using an IRC channel.\n\nOn Mon, Jun 13, 2011 at 11:09 AM, Jeff Garzik <jgarzik at exmulti.com> wrote:\n\n> On Mon, Jun 13, 2011 at 4:55 AM, Christian Decker\n> <decker.christian at gmail.com> wrote:\n> > We have quite a few bootstrapping mechanisms, starting with the overly\n> > complex (IMHO) IRC bootstrapping, which is often suspected as\n> bot-activity.\n> > Then we have a few hardcoded nodes and some fallback nodes. I was\n> wondering\n> > why we didn't adopt BitTorrent tracker bootstrapping until now? It's\n> > basically all it does. Given a hash (SHA1 hash of the genesis bloc would\n> be\n> > nice ^^) it gives you a list of other nodes with the same hash.\n>\n> It seems to offer few benefits over DNS seeding, while potentially\n> potentially creating a vulnerable hot spot in the DHT.  Sybil attacks\n> on DHTs are well documented.\n>\n> --\n> Jeff Garzik\n> exMULTI, Inc.\n> jgarzik at exmulti.com\n>\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110613/2d8c427a/attachment.html>"
+            },
+            {
+                "author": "Jeff Garzik",
+                "date": "2011-06-13T09:56:35",
+                "message_text_only": "On Mon, Jun 13, 2011 at 5:38 AM, Christian Decker\n<decker.christian at gmail.com> wrote:\n> BitTorrent trackers are used to handle several thousands of requests, so\n> they would probably scale well enough. I'm not even talking about using the\n> DHT trackers, but using old fashioned HTTP based trackers. The fact that\n> each bitcoin client would contact the tracker would make it very hard for an\n> attacker to get bootstrapping clients to exclusively connect to his\n> compromised clients. I would say that using a tracker such as OpenBittorrent\n> provides the same advantages as using an IRC channel.\n\nAnd how does the client discover HTTP trackers?  You're either\nhardcoding -those- into the client, or adding an additional bootstrap\nstep to discover them.  Either way, it has the same problems as other\ncurrent methods.\n\nThe history and experience of gnutella's web caches vs. UDP host\ncaches seems highly relevant here.\n\n-- \nJeff Garzik\nexMULTI, Inc.\njgarzik at exmulti.com"
+            },
+            {
+                "author": "Vladimir Marchenko",
+                "date": "2011-06-13T10:54:16",
+                "message_text_only": "one possible bootstrap method of last resort,\n\n1. create a convention of bitcoind listening on a specific last octest\nof IPv4 address, let's say, .14 when possible. Those of us who have\naccess to IP space would use .14's.\n\n2. if no other bootstrap method works, client could start scanning\nx.x.x.14 addresses, perhaps in some semi-intelligent order (starting\nfrom more pobable /8's and /16's), if enough people place bitcoind on\nx.x.x.14 than after a 10-100 thousand checks it bound to find a\nbitcoind peer.\n\nIt's messy, with all the excessive scanning etc... but it does not\ndepend on anything except a bunch of bitcoind by convention preferring\nlistening on x.x.x.14's.\n\nGiven that this is a method of last resort in bootrap chain it whould\nhopefully not lead to DDOS on those unlucky to own *.14 and not\nrunning bitcoind there. Also the more people are running bitcoind on\n.14, the quicker it would find a peer, the less scanning to do. It is\nkind of self-regualting.\n\nFor whatever it worth...\n\n\nOn 13 June 2011 10:56, Jeff Garzik <jgarzik at exmulti.com> wrote:\n> On Mon, Jun 13, 2011 at 5:38 AM, Christian Decker\n> <decker.christian at gmail.com> wrote:\n>> BitTorrent trackers are used to handle several thousands of requests, so\n>> they would probably scale well enough. I'm not even talking about using the\n>> DHT trackers, but using old fashioned HTTP based trackers. The fact that\n>> each bitcoin client would contact the tracker would make it very hard for an\n>> attacker to get bootstrapping clients to exclusively connect to his\n>> compromised clients. I would say that using a tracker such as OpenBittorrent\n>> provides the same advantages as using an IRC channel.\n>\n> And how does the client discover HTTP trackers? \u00a0You're either\n> hardcoding -those- into the client, or adding an additional bootstrap\n> step to discover them. \u00a0Either way, it has the same problems as other\n> current methods.\n>\n> The history and experience of gnutella's web caches vs. UDP host\n> caches seems highly relevant here.\n>\n> --\n> Jeff Garzik\n> exMULTI, Inc.\n> jgarzik at exmulti.com\n>\n> ------------------------------------------------------------------------------\n> EditLive Enterprise is the world's most technically advanced content\n> authoring tool. Experience the power of Track Changes, Inline Image\n> Editing and ensure content is compliant with Accessibility Checking.\n> http://p.sf.net/sfu/ephox-dev2dev\n> _______________________________________________\n> Bitcoin-development mailing list\n> Bitcoin-development at lists.sourceforge.net\n> https://lists.sourceforge.net/lists/listinfo/bitcoin-development\n>"
+            },
+            {
+                "author": "Christian Decker",
+                "date": "2011-06-13T11:48:38",
+                "message_text_only": "Yes, those trackers would be hard coded, just like the IRC servers and\nchannels are hardcoded right now.\n\nThe advantages over IRC and DNS Seeds are:\n - sporadic HTTP requests to a tracker, as opposed to keeping an IRC\nconnection open at all times\n - no virus/botnet like behaviour (automatically join IRC channel with\ncryptic name), ISPs tend to bother network admins (like myself) with alerts\nwhen they see this...\n - adapts faster than DNS Seeds which require configuration changes on seed\nshould the nodes become unreachable\n - we already use HTTP to determine our external IP, so it would be a\nconsolidation of transports\n - more peers than DNS Seeds (better load balancing)\n\nAs for Vladimirs proposal, seems like an extreme measure, that is not really\npractical. Also it leads to network partitions since nodes will prefer their\nown /8 and /16 networks. IPv6 will also soon be a problem for this method.\n\nOn Mon, Jun 13, 2011 at 12:54 PM, Vladimir Marchenko <\nvladimir at marchenko.co.uk> wrote:\n\n> one possible bootstrap method of last resort,\n>\n> 1. create a convention of bitcoind listening on a specific last octest\n> of IPv4 address, let's say, .14 when possible. Those of us who have\n> access to IP space would use .14's.\n>\n> 2. if no other bootstrap method works, client could start scanning\n> x.x.x.14 addresses, perhaps in some semi-intelligent order (starting\n> from more pobable /8's and /16's), if enough people place bitcoind on\n> x.x.x.14 than after a 10-100 thousand checks it bound to find a\n> bitcoind peer.\n>\n> It's messy, with all the excessive scanning etc... but it does not\n> depend on anything except a bunch of bitcoind by convention preferring\n> listening on x.x.x.14's.\n>\n> Given that this is a method of last resort in bootrap chain it whould\n> hopefully not lead to DDOS on those unlucky to own *.14 and not\n> running bitcoind there. Also the more people are running bitcoind on\n> .14, the quicker it would find a peer, the less scanning to do. It is\n> kind of self-regualting.\n>\n> For whatever it worth...\n>\n>\n> On 13 June 2011 10:56, Jeff Garzik <jgarzik at exmulti.com> wrote:\n> > On Mon, Jun 13, 2011 at 5:38 AM, Christian Decker\n> > <decker.christian at gmail.com> wrote:\n> >> BitTorrent trackers are used to handle several thousands of requests, so\n> >> they would probably scale well enough. I'm not even talking about using\n> the\n> >> DHT trackers, but using old fashioned HTTP based trackers. The fact that\n> >> each bitcoin client would contact the tracker would make it very hard\n> for an\n> >> attacker to get bootstrapping clients to exclusively connect to his\n> >> compromised clients. I would say that using a tracker such as\n> OpenBittorrent\n> >> provides the same advantages as using an IRC channel.\n> >\n> > And how does the client discover HTTP trackers?  You're either\n> > hardcoding -those- into the client, or adding an additional bootstrap\n> > step to discover them.  Either way, it has the same problems as other\n> > current methods.\n> >\n> > The history and experience of gnutella's web caches vs. UDP host\n> > caches seems highly relevant here.\n> >\n> > --\n> > Jeff Garzik\n> > exMULTI, Inc.\n> > jgarzik at exmulti.com\n> >\n> >\n> ------------------------------------------------------------------------------\n> > EditLive Enterprise is the world's most technically advanced content\n> > authoring tool. Experience the power of Track Changes, Inline Image\n> > Editing and ensure content is compliant with Accessibility Checking.\n> > http://p.sf.net/sfu/ephox-dev2dev\n> > _______________________________________________\n> > Bitcoin-development mailing list\n> > Bitcoin-development at lists.sourceforge.net\n> > https://lists.sourceforge.net/lists/listinfo/bitcoin-development\n> >\n>\n>\n> ------------------------------------------------------------------------------\n> EditLive Enterprise is the world's most technically advanced content\n> authoring tool. Experience the power of Track Changes, Inline Image\n> Editing and ensure content is compliant with Accessibility Checking.\n> http://p.sf.net/sfu/ephox-dev2dev\n> _______________________________________________\n> Bitcoin-development mailing list\n> Bitcoin-development at lists.sourceforge.net\n> https://lists.sourceforge.net/lists/listinfo/bitcoin-development\n>\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110613/d921638d/attachment.html>"
+            },
+            {
+                "author": "Jeff Garzik",
+                "date": "2011-06-13T16:51:02",
+                "message_text_only": "On Mon, Jun 13, 2011 at 7:48 AM, Christian Decker\n<decker.christian at gmail.com> wrote:\n> The advantages over IRC and DNS Seeds are:\n> \u00a0- sporadic HTTP requests to a tracker, as opposed to keeping an IRC\n> connection open at all times\n\nNo advantage over DNS (you're talking about IRC)\n\n> \u00a0- no virus/botnet like behaviour (automatically join IRC channel with\n> cryptic name), ISPs tend to bother network admins (like myself) with alerts\n> when they see this...\n\nNo advantage over DNS (you're talking about IRC)\n\n> \u00a0- adapts faster than DNS Seeds which require configuration changes on seed\n> should the nodes become unreachable\n\nFalse.  A proper DNS seed actively samples the bitcoin network for live nodes.\n\n> \u00a0- we already use HTTP to determine our external IP, so it would be a\n> consolidation of transports\n\nIrrelevant -- it's still a bunch of additional code.  We \"already use\"\nDNS lookups as well, so I could apply similar logic to DNS seeding.\n\n> \u00a0- more peers than DNS Seeds (better load balancing)\n\nThis is an invalid assumption, based on an overly simplistic sampling.\n DNS seeds are perfectly capable of returning new and useful peers on\neach query.\n\n-- \nJeff Garzik\nexMULTI, Inc.\njgarzik at exmulti.com"
+            },
+            {
+                "author": "Vladimir Marchenko",
+                "date": "2011-06-13T18:00:59",
+                "message_text_only": "Jeff is absolutely correct, stating that DNS bootstrapping can\npotentially be very robust.\n\nConsider, for example, that seeds can be hosted by services like\nzerigo, who provide decent management API's, as well as by thousands\nof small VPS operated by people all over the world. Moreover, if\nnamecoin lives up to it's promises than some seeds can be hosted using\nit's tlds, and as such we would get around centralised ICANN/registrar\nweakness.\n\nThe most practical way I see how to improve DNS bootstrapping is\npublishing build instructions for a simple DNS server build and a\nscript which feeds it with node data. Something simple like djbdns plus\na perl script, or similar zerigo API script, would do. Than anyone can\nhost it. All left to do than is to hardcode a bunch of such DNS seeds\ninto the client.\n\nHardcoding seeds is not good enough? Get a convention that anyone\nowning a bitcoin.* domain should point seed.bitcoin.* to a decent DNS\nseed. Than clients simply scan 100-200 tld's to find working\nseed.bitcoin.*\n\nI am not quite sure, though, is if this would enable some attacks by\npoisoned seeds.\n\nVladimir."
+            },
+            {
+                "author": "Gavin",
+                "date": "2011-06-13T18:41:35",
+                "message_text_only": "> The most practical way I see how to improve DNS bootstrapping is\n> publishing build instructions for a simple DNS server build and a\n> script which feeds it with node data. Something simple like djbdns plus\n> a perl script, or similar zerigo API script, would do. Than anyone can\n> host it. All left to do than is to hardcode a bunch of such DNS seeds\n> into the client.\n\nAdding that code to bitcoin in a contrib/dns folder seems like a good idea.  I'd be happy to run a dns seed."
+            },
+            {
+                "author": "Jeff Garzik",
+                "date": "2011-06-13T20:16:14",
+                "message_text_only": "On Mon, Jun 13, 2011 at 2:41 PM, Gavin <gavinandresen at gmail.com> wrote:\n>> The most practical way I see how to improve DNS bootstrapping is\n>> publishing build instructions for a simple DNS server build and a\n>> script which feeds it with node data. Something simple like djbdns plus\n>> a perl script, or similar zerigo API script, would do. Than anyone can\n>> host it. All left to do than is to hardcode a bunch of such DNS seeds\n>> into the client.\n>\n> Adding that code to bitcoin in a contrib/dns folder seems like a good idea.\n\nAgreed.  I'll see if I can put together a couple different solutions,\nand stick them in there.  ETA 3-4 weeks though, given current bugfix\nworkload + personal issues (moving to a new house).\n\nI had a thought related to this, but readily admit I haven't thought\nthis through:  create an RPC in bitcoin that returns a random\nselection of fresh P2P node addresses, from addr.dat.  One problem I\nwas running into was accessing this data from outside bitcoin.\n\nUsing ArtForz' half-a-node as a base was a possibility, but creating\n\"getnodes\" RPC seemed far easier.\n\ndjbdns (tinydns) is great for this:  it is highly scalable and stable,\nand its input is a -very- simple text format, easier to generate than\nBIND zone files.\n\n> I'd be happy to run a dns seed.\n\nGreat!  A big missing piece is simply trusted people running DNS seeds\non stable connectivity, once the DNS software is there.\n\n-- \nJeff Garzik\nexMULTI, Inc.\njgarzik at exmulti.com"
+            }
+        ],
+        "thread_summary": {
+            "title": "Bootstrapping via BitTorrent trackers",
+            "categories": [
+                "Bitcoin-development"
+            ],
+            "authors": [
+                "Christian Decker",
+                "Jeff Garzik",
+                "Gavin",
+                "Vladimir Marchenko"
+            ],
+            "messages_count": 10,
+            "total_messages_chars_count": 15876
+        }
+    },
+    {
+        "title": "[Bitcoin-development] Ready for 0.3.23 release?",
+        "thread_messages": [
+            {
+                "author": "Jeff Garzik",
+                "date": "2011-06-13T20:44:11",
+                "message_text_only": "(cc'd the devs that I'm not sure are on the dev mailing list yet)\n\n\nVersion 0.3.23 doesn't seem to have major issues, and testing has been\nunremarkable.  I think we can go ahead and push it out.\n\nACK for final release of 0.3.23?\n\n-- \nJeff Garzik\nexMULTI, Inc.\njgarzik at exmulti.com"
+            }
+        ],
+        "thread_summary": {
+            "title": "Ready for 0.3.23 release?",
+            "categories": [
+                "Bitcoin-development"
+            ],
+            "authors": [
+                "Jeff Garzik"
+            ],
+            "messages_count": 1,
+            "total_messages_chars_count": 282
+        }
+    },
+    {
+        "title": "[Bitcoin-development] Bitcoin v0.3.23 released",
+        "thread_messages": [
+            {
+                "author": "Jeff Garzik",
+                "date": "2011-06-13T23:46:16",
+                "message_text_only": "Win32, Linux and source releases (MacOSX soon) for bitcoin v0.3.23\nhave been uploaded to\nhttps://sourceforge.net/projects/bitcoin/files/Bitcoin/bitcoin-0.3.23/\n\nThis is another quick bugfix release, trying to deal with the influx\nof new bitcoin users.\n\nPriority for next version:  wallet encryption\n\nMain items of note:\n\n    * P2P connect-to-node logic changed to reduce timeout a bit.  The\nnetwork saw a huge influx of new users, who do not permit incoming\nconnections.  This change is a short-term hack, to more quickly hunt\nfor useful P2P connections.  Better \"leaf node\" logic is in the works,\nbut this should let us limp along until then.\n    * Transaction fee reduced to 0.0005 for new transactions (see note below)\n    * Client will relay transactions with fees as low as 0.0001 BTC\n(see note below)\n\n\nNOTE:  There has been some fee confusion recently.  Free transactions\nare supported and relayed as they always have been, according to\nspecial anti-spam rules.  See\nhttps://en.bitcoin.it/wiki/Transaction_fees for details.\n\nFull git changelog:\n\nDean Lee (1):\n      Updated Chinese Simp translation\n\nDoug Huff (3):\n      Fix rfc1918 and rfc3927 compliance for ignoring non-internet-routable host\n      Add common temp files to .gitignore.\n      Demystify a few magic numbers.\n\nHan Lin Yap (2):\n      Added Swedish translation\n      Remove unused variable\n\nJeff Garzik (4):\n      Bump version to 0.3.23.\n      Reduce minimum TX fee for new transactions, to 0.0005.\n      Lower minimum relay TX fee to 0.0001 (from 0.0005) BTC.\n      Add minimal release process docs.\n\nMatt Corallo (1):\n      Fix CPU Usage bug when using -nolisten and have no connections.\n\nNils Schneider (1):\n      create keypool in LoadWallet()\n\nPieter Wuille (3):\n      Update transactions already in the wallet when rescanning.\n      Fix for small change outputs\n      Faster timeout when connecting\n\nThere were no changes between -rc1 and -final.  Wanted to get this out\nASAP, and move on to wallet crypto.\n\n-- \nJeff Garzik\nexMULTI, Inc.\njgarzik at exmulti.com"
+            },
+            {
+                "author": "Jeff Garzik",
+                "date": "2011-06-16T21:51:16",
+                "message_text_only": "Some minor updates to the released files:\n\n1. Linux tarball regenerated with properly named directory inside.\n2. Win32 .zip archive added.\n3. PGP-signed SHA1SUM.asc added to SF\n\nThe following are the updated checksums:\n\n-----BEGIN PGP SIGNED MESSAGE-----\nHash: SHA1\n\nd7a34e1151dedfba5af1bf7496ed041f5b4955e5  bitcoin-0.3.23-linux.tar.gz\n42e8a86a97edcafb12d09fa69b56ad0451baa140  bitcoin-0.3.23-macosx.zip\n779c6bb227801a51084be9594dc185d0a054ed53  bitcoin-0.3.23-src.tar.gz\n12952b1c4a15ce55564500dace18ee22eb2feaa8  bitcoin-0.3.23-win32-setup.exe\n89194d3b3ee87f450f520cf365b863e0fab8bc9f  bitcoin-0.3.23-win32.zip\n-----BEGIN PGP SIGNATURE-----\nVersion: GnuPG v1.4.11 (GNU/Linux)\n\niQIVAwUBTfp5k9odwg8tvwyoAQIJ9Q/9GHiSA8oEuQM29qu1laCD45AY9lnsJeNN\nZNRiAE92WJ7SiSKxW6V1M1phMk4IMG/0MmR8L/PRqJfWDg+6FQzAzpZLobH0Hnfl\nMujhKIhRcP1zs7m/t/zwjQxRXT+N6UotfdwvO+GLbBnUSVZC2zr/9XdSs65gLIhq\nlMkJUwYLEBvuXvo98Sbp5MeXHdfWUqAQufuYnMvRsCT9BcX5cP8cmaxvICLANRbc\n89kU+7JQ7fauiHTnYJ0GkK/xIyCnlwfGsEe8GQsIgWF0RBpayszCxSOsuzFYMsED\n7cIjN9AscDiJ3UmhXSg6xbRi4LZGXm195TmMdxJdRNHWqjfpFkxEXoW7iuUvxVDU\ntiMMA+yXMTUSdbn2IxdZFLqKpgXcpf05T91g9w/ll1VMxkmOOcTSZc5dCbMMUn0z\nkA12PagjDlH+xz3Qab9GNV13XlHKbG0VT8AsE1No+HJCV8qugMdI6hgZqMDucbmQ\nU2KiG0EpwNx2G31l2K99yIxuumE7nDslhkfzSosVXhgHwqzr4ukl5ykFwfZnJjHF\nBJ0zrcWCViGes+3awHwASQvlIGcvXprEzC0ZKEsbalZkAoCYYiGoZbNHtEMq3lZq\nd0siUzwEPA31xfS/dACbX8ml8jC0jBmEy296WZ2LX7pZOcqa2ayMbGE81tg+5Nvy\nUYihPYX4FS0=\n=9NXu\n-----END PGP SIGNATURE-----\n\n-- \nJeff Garzik\nexMULTI, Inc.\njgarzik at exmulti.com"
+            }
+        ],
+        "thread_summary": {
+            "title": "Bitcoin v0.3.23 released",
+            "categories": [
+                "Bitcoin-development"
+            ],
+            "authors": [
+                "Jeff Garzik"
+            ],
+            "messages_count": 2,
+            "total_messages_chars_count": 3532
+        }
+    },
+    {
+        "title": "[Bitcoin-development] Release priorities for v0.4?",
+        "thread_messages": [
+            {
+                "author": "Jeff Garzik",
+                "date": "2011-06-13T23:59:08",
+                "message_text_only": "With increased reports of stolen wallets, I humbly submit that wallet\ncrypto should be a top priority for the next version.\nhttps://github.com/bitcoin/bitcoin/pull/232\n\nAnyway...  start pulling :)\n\n-- \nJeff Garzik\nexMULTI, Inc.\njgarzik at exmulti.com"
+            },
+            {
+                "author": "Mark Visser",
+                "date": "2011-06-15T14:27:51",
+                "message_text_only": "[n00b alert]\n\nI humbly suggest allowing the wallet.dat location to be specified in the preferences. Being able to easily physically disconnect a wallet by unplugging a USB key seems like a good idea.\n\ncheers,\nMark"
+            },
+            {
+                "author": "Jeff Garzik",
+                "date": "2011-06-15T16:50:31",
+                "message_text_only": "On Wed, Jun 15, 2011 at 10:27 AM, Mark Visser <mjmvisser at gmail.com> wrote:\n> I humbly suggest allowing the wallet.dat location to be specified in the preferences. Being able to easily physically disconnect a wallet by unplugging a USB key seems like a good idea.\n\nThat's what -datadir is for.  Unfortunately -all- databases must be in\nthe datadir, because wallet.dat is a berkeley db, and we need a\ntransactional environment.  That makes it difficult to move just one\nfile.\n\n-- \nJeff Garzik\nexMULTI, Inc.\njgarzik at exmulti.com"
+            },
+            {
+                "author": "Theodore Witkamp",
+                "date": "2011-06-15T17:32:39",
+                "message_text_only": "On Wed, Jun 15, 2011 at 9:50 AM, Jeff Garzik <jgarzik at exmulti.com> wrote:\n> On Wed, Jun 15, 2011 at 10:27 AM, Mark Visser <mjmvisser at gmail.com> wrote:\n>> I humbly suggest allowing the wallet.dat location to be specified in the preferences. Being able to easily physically disconnect a wallet by unplugging a USB key seems like a good idea.\n>\n> That's what -datadir is for. \u00a0Unfortunately -all- databases must be in\n> the datadir, because wallet.dat is a berkeley db, and we need a\n> transactional environment. \u00a0That makes it difficult to move just one\n> file.\n\nI am a Berkley DB ignoramus , but how is specifying the wallet file\npath different than using a symlink?\n\nAlso I think that allowing the user to open more than one wallet helps\nthe user develop an intuition for the system.\nA simple task like opening transferring coins from one to the other is\ncurrently very awkward on the same installation.\n\nTed"
+            }
+        ],
+        "thread_summary": {
+            "title": "Release priorities for v0.4?",
+            "categories": [
+                "Bitcoin-development"
+            ],
+            "authors": [
+                "Jeff Garzik",
+                "Mark Visser",
+                "Theodore Witkamp"
+            ],
+            "messages_count": 4,
+            "total_messages_chars_count": 1907
+        }
+    },
+    {
+        "title": "[Bitcoin-development] Bumping up against flood control limits again?",
+        "thread_messages": [
+            {
+                "author": "Mike Hearn",
+                "date": "2011-06-14T16:44:41",
+                "message_text_only": "Block sizes have started to get quite large once again. Whilst testing\nchain download today I was disconnected due to going over the 10mb\nflood control limit. Infuriatingly, I can't reproduce this reliably.\nBut at 500 blocks an average of 20kb per block will cause this. As we\ncan see from the block explorer, the average is probably quite close\nto that.\n\nThe flood control seems like a pretty serious scalability limitation.\nI can see a few solutions. One is to raise the limit again. Another is\nto raise the limit and simultaneously lower the batch size. 500 blocks\nin one message means very large messages no matter how big the flood\ncontrol limit is. Going down to 100 or even 50 would hurt chain\ndownload speed quite a bit in high latency environments, but chain\ndownload is already a serious bottleneck.\n\nThoughts?"
+            },
+            {
+                "author": "Dave Smith",
+                "date": "2011-06-14T17:07:59",
+                "message_text_only": "Does it make more sense to have the flood limit based on size in bytes\nversus # of blocks?\n\n(I'm a n00b, so pardon my ignorance). :)\n\nD.\n\nOn Tue, Jun 14, 2011 at 10:44 AM, Mike Hearn <mike at plan99.net> wrote:\n> Block sizes have started to get quite large once again. Whilst testing\n> chain download today I was disconnected due to going over the 10mb\n> flood control limit. Infuriatingly, I can't reproduce this reliably.\n> But at 500 blocks an average of 20kb per block will cause this. As we\n> can see from the block explorer, the average is probably quite close\n> to that.\n>\n> The flood control seems like a pretty serious scalability limitation.\n> I can see a few solutions. One is to raise the limit again. Another is\n> to raise the limit and simultaneously lower the batch size. 500 blocks\n> in one message means very large messages no matter how big the flood\n> control limit is. Going down to 100 or even 50 would hurt chain\n> download speed quite a bit in high latency environments, but chain\n> download is already a serious bottleneck.\n>\n> Thoughts?\n>\n> ------------------------------------------------------------------------------\n> EditLive Enterprise is the world's most technically advanced content\n> authoring tool. Experience the power of Track Changes, Inline Image\n> Editing and ensure content is compliant with Accessibility Checking.\n> http://p.sf.net/sfu/ephox-dev2dev\n> _______________________________________________\n> Bitcoin-development mailing list\n> Bitcoin-development at lists.sourceforge.net\n> https://lists.sourceforge.net/lists/listinfo/bitcoin-development\n>"
+            },
+            {
+                "author": "Jeff Garzik",
+                "date": "2011-06-14T17:14:21",
+                "message_text_only": "On Tue, Jun 14, 2011 at 12:44 PM, Mike Hearn <mike at plan99.net> wrote:\n> Block sizes have started to get quite large once again. Whilst testing\n> chain download today I was disconnected due to going over the 10mb\n> flood control limit. Infuriatingly, I can't reproduce this reliably.\n> But at 500 blocks an average of 20kb per block will cause this. As we\n> can see from the block explorer, the average is probably quite close\n> to that.\n>\n> The flood control seems like a pretty serious scalability limitation.\n> I can see a few solutions. One is to raise the limit again. Another is\n> to raise the limit and simultaneously lower the batch size. 500 blocks\n> in one message means very large messages no matter how big the flood\n> control limit is. Going down to 100 or even 50 would hurt chain\n> download speed quite a bit in high latency environments, but chain\n> download is already a serious bottleneck.\n\nThe main goal was not flood control but preventing an internal buffer\nmemory explosion.  We already have the block chain on disk, so in\ntheory, if we can -eliminate- the outgoing network buffer and simply\nuse a pointer into the block chain file, we can send as much data as\nwe want.\n\nHTTP servers certainly don't buffer huge amounts in memory; they would\nkeel over if so.  HTTP servers have been working on the reverse, in\nfact:  moving the data-pushing over to sendfile(2) syscall and similar\noptimizations.\n\nThis is an unfortunate relic of how bitcoin P2P code is written.  If\nthe remote side has reduced their TCP window to zero, bitcoin will\nstill buffer so that it may continue processing other P2P traffic from\nother nodes.  That makes sense in the case of tiny, 31-byte address\nmessages -- one must handle the case of a half-sent message before\nwrite(2) refuses additional data -- but not huge block chain download\nmessages.\n\nThe P2P code just wasn't written for huge amounts of streaming data,\nand needs some serious thinking...  I agree 100% that it is an issue\nwe will start bumping into, if we haven't already.\n\n-- \nJeff Garzik\nexMULTI, Inc.\njgarzik at exmulti.com"
+            }
+        ],
+        "thread_summary": {
+            "title": "Bumping up against flood control limits again?",
+            "categories": [
+                "Bitcoin-development"
+            ],
+            "authors": [
+                "Jeff Garzik",
+                "Mike Hearn",
+                "Dave Smith"
+            ],
+            "messages_count": 3,
+            "total_messages_chars_count": 4499
+        }
+    },
+    {
+        "title": "[Bitcoin-development] Question about dust spam rule",
+        "thread_messages": [
+            {
+                "author": "jan at uos.de",
+                "date": "2011-06-14T19:45:30",
+                "message_text_only": "Hi there!\n\nAs can been seen from this code block\n\n  // To limit dust spam, require MIN_TX_FEE/MIN_RELAY_TX_FEE if any output is less than 0.01\n  if (nMinFee < nBaseFee)\n      BOOST_FOREACH(const CTxOut& txout, vout)\n          if (txout.nValue < CENT)\n              nMinFee = nBaseFee;\n\na fee is required as soon as any output is less than CENT.\n\nI was wondering: would it be possible to loosen this rule to something\nlike \"if _all_ outputs are less than CENT\" or maybe \"if more than 50% of\nall outputs are less than CENT\"?\n\nThe reason is, that I'm currently working on a project, where I would\nlike to take a small cut on transactions passing through (probably not\nan usual requirement) and a lot of those small cuts would probably bump\ninto this rule.\n\nIsn't this rule mainly meant to prevent lots of transactions with small\ncoins? So \"all small coins\" should work as well as \"any small coins\" or\nam I missing something? (things like creating large transactions should\nalready be caught by other rules, right?)\n\nRegards!\nJan"
+            }
+        ],
+        "thread_summary": {
+            "title": "Question about dust spam rule",
+            "categories": [
+                "Bitcoin-development"
+            ],
+            "authors": [
+                "jan at uos.de"
+            ],
+            "messages_count": 1,
+            "total_messages_chars_count": 1025
+        }
+    },
+    {
+        "title": "[Bitcoin-development] Protocol versioning",
+        "thread_messages": [
+            {
+                "author": "Jeff Garzik",
+                "date": "2011-06-15T06:06:26",
+                "message_text_only": "This issue has been simmering for a while...\n\nI agree with the following general principles, and it sounds like\nothers on the forums do too:\n\nGP1) Alternative implementations of a protocol are beneficial to the ecosystem.\n\nGP2) Tying together protocol and client version is sub-optimal, and\nundesirable long term.\n\nThe current, coarse-grained scheme was clearly preferred by satoshi.\nHe knew what a chore creating a fully compliant client would be, and\nwhen I joined (July 2010), was actively discouraging alternative\nclient efforts.  Also, tying protocol and client version together\ncertainly eased the deployment of changes.\n\nProtocol development has clearly slowed, and we have at least one\nmajor alternative client in the works (bitcoinj), so it seems fair to\nrevisit those assumptions and preferences.\n\nHere are several mini-proposals for the Satoshi Client (anyone got a\nbetter nickname?) along these lines, which should better prepare the\nbitcoin protocol for the long term:\n\nMP1) Avoid creating four-component version numbers (W.X.Y.Z), and use\npszSubVer as a client identification string.  This proposal originally\ncame from Mike Hearn, IIRC.\n\nMP2) remove IP transactions in v0.4\n\nMP3) create constants for protocol version, and audit code to split\nclient version from protocol version.  This is a THORNY patch, and far\nmore difficult than https://github.com/bitcoin/bitcoin/pull/63\nimplies.  The code has various data structures and such versioned, so\nit is difficult to pick out at quick glance which 'version' is which.\n\nMP4) split protocol and client versions in v0.4 -- though you will not\nactually notice a change until v0.4.1, when the client version changes\nbut the protocol version does not.\n\nMP5) Use a single bit inside 'nServices' to indicate the presence of\nan optional \"capabilities\" message.  The purpose of this is to enable\nminor protocol changes without having to change the protocol version.\nThus, nodes may advertise /features/ rather than simply \"I support all\nfeatures >= version X\".  Most mature protocols support this sort of\nthing, rather than the simpler, coarse-grained version number system.\n\n-- \nJeff Garzik\nexMULTI, Inc.\njgarzik at exmulti.com"
+            },
+            {
+                "author": "Christian Decker",
+                "date": "2011-06-15T12:46:24",
+                "message_text_only": "On Wed, Jun 15, 2011 at 8:06 AM, Jeff Garzik <jgarzik at exmulti.com> wrote:\n\n> This issue has been simmering for a while...\n>\n> I agree with the following general principles, and it sounds like\n> others on the forums do too:\n>\n> GP1) Alternative implementations of a protocol are beneficial to the\n> ecosystem.\n>\n> GP2) Tying together protocol and client version is sub-optimal, and\n> undesirable long term.\n>\n> The current, coarse-grained scheme was clearly preferred by satoshi.\n> He knew what a chore creating a fully compliant client would be, and\n> when I joined (July 2010), was actively discouraging alternative\n> client efforts.  Also, tying protocol and client version together\n> certainly eased the deployment of changes.\n>\n> Protocol development has clearly slowed, and we have at least one\n> major alternative client in the works (bitcoinj), so it seems fair to\n> revisit those assumptions and preferences.\n>\nLooking back I have to agree that binding the protocol to the client version\nwas in fact good, since it allowed for a fast evolution along with the then\nonly client. My proposal to split the both may have come too early, but I\npersonally grew frustrated when implementing my own networking stack. With\nthe protocol having matured, and changes becoming ever less frequent, I'd be\nhappy for the split to happen.\n\n>\n> Here are several mini-proposals for the Satoshi Client (anyone got a\n> better nickname?) along these lines, which should better prepare the\n> bitcoin protocol for the long term:\n>\nI called it Mainline client (like the original Bittorrent client) as a hint\nthat this is the reference implementation everybody should refer to, but\nSatoshi Client has a nice sound too :-)\n\n>\n> MP1) Avoid creating four-component version numbers (W.X.Y.Z), and use\n> pszSubVer as a client identification string.  This proposal originally\n> came from Mike Hearn, IIRC.\n>\nThe version number being incremented each time a breaking change to the\nprotocol has been made? Mike and I discussed that quite a while back, and\nusing the String as client specific identifier with a version number (mainly\nfor statistical purposes) sounds like a good idea, similar to User Agent\nstrings in HTTP.\n\n>\n> MP2) remove IP transactions in v0.4\n>\n\n> MP3) create constants for protocol version, and audit code to split\n> client version from protocol version.  This is a THORNY patch, and far\n> more difficult than https://github.com/bitcoin/bitcoin/pull/63\n> implies.  The code has various data structures and such versioned, so\n> it is difficult to pick out at quick glance which 'version' is which.\n>\nYeah, sorry for that one :-)\nI posted the request to the issue tracker before that pull, and I was asked\nto submit a pull request with the needed changes, which sounded a bit\nstrange for a conceptual change like this one. Isn't a gradual switch\npossible? I'd leave the version number as is and simply don't increment it,\nso if the code does not rely on specific values for pszSubVer it shouldn't\nbreak at all.\n\n>\n> MP4) split protocol and client versions in v0.4 -- though you will not\n> actually notice a change until v0.4.1, when the client version changes\n> but the protocol version does not.\n>\nSo we could consider version 40000 the first \"stable\" protocol release?\nSounds good.\n\n>\n> MP5) Use a single bit inside 'nServices' to indicate the presence of\n> an optional \"capabilities\" message.  The purpose of this is to enable\n> minor protocol changes without having to change the protocol version.\n> Thus, nodes may advertise /features/ rather than simply \"I support all\n> features >= version X\".  Most mature protocols support this sort of\n> thing, rather than the simpler, coarse-grained version number system.\n>\nAlways happy to hear you like my idea :D\n\nAll in all I'm really looking forward to this.\n\nRegards,\nChris\n\n>\n> --\n> Jeff Garzik\n> exMULTI, Inc.\n> jgarzik at exmulti.com\n>\n>\n> ------------------------------------------------------------------------------\n> EditLive Enterprise is the world's most technically advanced content\n> authoring tool. Experience the power of Track Changes, Inline Image\n> Editing and ensure content is compliant with Accessibility Checking.\n> http://p.sf.net/sfu/ephox-dev2dev\n> _______________________________________________\n> Bitcoin-development mailing list\n> Bitcoin-development at lists.sourceforge.net\n> https://lists.sourceforge.net/lists/listinfo/bitcoin-development\n>\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110615/fb8ab67d/attachment.html>"
+            },
+            {
+                "author": "Doug Huff",
+                "date": "2011-06-15T13:04:06",
+                "message_text_only": "On Jun 15, 2011, at 7:46 AM, Christian Decker wrote:\n\n> On Wed, Jun 15, 2011 at 8:06 AM, Jeff Garzik <jgarzik at exmulti.com> wrote:\n> Here are several mini-proposals for the Satoshi Client (anyone got a\n> better nickname?) along these lines, which should better prepare the\n> bitcoin protocol for the long term:\n> I called it Mainline client (like the original Bittorrent client) as a hint that this is the reference implementation everybody should refer to, but Satoshi Client has a nice sound too :-)\n\n\nI propose \"Reference client.\" Seeing as that's what it is, the original reference implementation.\n\n-- \nDouglas Huff\n\n\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110615/aac13554/attachment.html>"
+            }
+        ],
+        "thread_summary": {
+            "title": "Protocol versioning",
+            "categories": [
+                "Bitcoin-development"
+            ],
+            "authors": [
+                "Jeff Garzik",
+                "Doug Huff",
+                "Christian Decker"
+            ],
+            "messages_count": 3,
+            "total_messages_chars_count": 7587
+        }
+    },
+    {
+        "title": "[Bitcoin-development] [PULL] Add scriptPubKey enforced sendescrow and redeemescrow API calls",
+        "thread_messages": [
+            {
+                "author": "bgroff at lavabit.com",
+                "date": "2011-06-16T04:53:40",
+                "message_text_only": "I have a pull request here:\n\nhttps://github.com/bitcoin/bitcoin/pull/319\n\n>From the README:\n\n  Bitcoin \"escrow\" are coins that are under the control of multiple\n  parties.  The initial implementation allows n parties to vote, with\n  k good signatures needed (k <= n).\n\n  This eliminates single points of failure and reduces the trust required\n  in many transaction use cases.\n\nUse cases include Escrow (without trusting the escrow agent with the\ncoins), immediate payment and funds locked with multi-party signatures.\n\nThis was inspired by https://forum.bitcoin.org/index.php?topic=8821.0 and\nhttps://forum.bitcoin.org/index.php?topic=4723.msg68804 .\n\nFeedback on the pull is very much appreciated."
+            },
+            {
+                "author": "Mike Hearn",
+                "date": "2011-06-22T13:24:36",
+                "message_text_only": "Thanks for writing this. It's great to see somebody run with the contracts\nprotocol.\n\nYour proposed protocol is simpler than the one I suggested, so I updated the\nContracts wiki page to use it. However your implementation, as pointed out\nby Gavin, is too complicated. See my proposal on the wiki here:\n\n  https://en.bitcoin.it/wiki/Contracts\n\nI think you can just use an output script of\n\n  2 <K1> <K2> <K3> 3 CHECKMULTISIGVERIFY\n\n\n\nOn Thu, Jun 16, 2011 at 6:53 AM, <bgroff at lavabit.com> wrote:\n\n> I have a pull request here:\n>\n> https://github.com/bitcoin/bitcoin/pull/319\n>\n> >From the README:\n>\n>  Bitcoin \"escrow\" are coins that are under the control of multiple\n>  parties.  The initial implementation allows n parties to vote, with\n>  k good signatures needed (k <= n).\n>\n>  This eliminates single points of failure and reduces the trust required\n>  in many transaction use cases.\n>\n> Use cases include Escrow (without trusting the escrow agent with the\n> coins), immediate payment and funds locked with multi-party signatures.\n>\n> This was inspired by https://forum.bitcoin.org/index.php?topic=8821.0 and\n> https://forum.bitcoin.org/index.php?topic=4723.msg68804 .\n>\n> Feedback on the pull is very much appreciated.\n>\n>\n>\n>\n>\n> ------------------------------------------------------------------------------\n> EditLive Enterprise is the world's most technically advanced content\n> authoring tool. Experience the power of Track Changes, Inline Image\n> Editing and ensure content is compliant with Accessibility Checking.\n> http://p.sf.net/sfu/ephox-dev2dev\n> _______________________________________________\n> Bitcoin-development mailing list\n> Bitcoin-development at lists.sourceforge.net\n> https://lists.sourceforge.net/lists/listinfo/bitcoin-development\n>\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110622/94aeaa9f/attachment.html>"
+            },
+            {
+                "author": "Mike Hearn",
+                "date": "2011-06-22T13:42:11",
+                "message_text_only": "Oh, one other thing - as you point out yourself, escrow is only one use case\nfor multsig transactions. So I suggest you don't use the word in the patch.\nMaybe instead call them multisign or multipay transactions.\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110622/38c43886/attachment.html>"
+            },
+            {
+                "author": "bgroff at lavabit.com",
+                "date": "2011-06-22T16:01:47",
+                "message_text_only": "> Oh, one other thing - as you point out yourself, escrow is only one use\n> case\n> for multsig transactions. So I suggest you don't use the word in the\n> patch.\n> Maybe instead call them multisign or multipay transactions.\n\n\nAgreed.  I'll rename to multisign.\n\n--\nBobby Groff"
+            },
+            {
+                "author": "Gavin Andresen",
+                "date": "2011-06-22T14:08:05",
+                "message_text_only": "On Wed, Jun 22, 2011 at 9:24 AM, Mike Hearn <mike at plan99.net> wrote:\n> I think you can just use an output script of\n> \u00a0 2 <K1> <K2> <K3> 3 CHECKMULTISIGVERIFY\n\nI think it is time to start experimenting with MULTISIG transactions on testnet.\n\nMike:  Did Satoshi ever tell you what he was thinking for the best way\nto implement MULTISIG transactions?\nI'm wondering if hard-coding new standard script templates in\nscript.cpp Solver():\n\n vTemplates.push_back(CScript() << OP_1 << OP_PUBKEY << OP_PUBKEY <<\nOP_2 << OP_CHECKMULTISIGVERIFY);\n vTemplates.push_back(CScript() << OP_2 << OP_PUBKEY << OP_PUBKEY <<\nOP_2 << OP_CHECKMULTISIGVERIFY);\n vTemplates.push_back(CScript() << OP_1 << OP_PUBKEY << OP_PUBKEY <<\nOP_PUBKEY << OP_3 << OP_CHECKMULTISIGVERIFY);\n vTemplates.push_back(CScript() << OP_2 << OP_PUBKEY << OP_PUBKEY <<\nOP_PUBKEY << OP_3 << OP_CHECKMULTISIGVERIFY);\n vTemplates.push_back(CScript() << OP_3 << OP_PUBKEY << OP_PUBKEY <<\nOP_PUBKEY << OP_3 << OP_CHECKMULTISIGVERIFY);\n\n... would be the right approach to support 1/2 of 2 and 1/2/3 of 3\nsignatures.  It'd be nice if there were generic\nOP_N << OP_PUBKEY_N << OP_N  ... template matching opcodes, but there aren't.\n\nI'm also wondering if it makes sense to just support 2-of-2 (for\nvalidate-on-multiple-devices) and 2-of-3 (for escrow) for now.\n\nI think all of these could use a new type of bitcoin payment address;\nit might make sense for THAT to be generic, maybe containing:\n version byte\n m\n n\n hash of xor of all n public keys\n checksum\n\nI'm most interested in the 2-of-2 case; I think merchants and\nexchanges need bitcoin deposit/payment addresses that they can make\nsecure by requiring a 2-step signature process for spending those\nfunds.\n\n-- \n--\nGavin Andresen\nhttp://clearcoin.com/"
+            },
+            {
+                "author": "Mike Hearn",
+                "date": "2011-06-22T14:49:51",
+                "message_text_only": "> Mike: \u00a0Did Satoshi ever tell you what he was thinking for the best way\n> to implement MULTISIG transactions?\n\nHe didn't. Satoshi told me very little unfortunately. What he did tell\nme, I've written up about half of it. I still have high frequency\ntrading and some details of obscure SIGHASH types to go, but I wanted\nto find examples to illustrate them first as Satoshi only gave the\nvaguest of outlines.\n\n> I'm wondering if hard-coding new standard script templates in\n> script.cpp Solver():\n\nCHECKMULTISIG allows up to 20 keys, I think. So it'd probably be\nbetter to just have a bit of custom logic that checks if the script is\nof the right form.\n\n> ... would be the right approach to support 1/2 of 2 and 1/2/3 of 3\n> signatures. \u00a0It'd be nice if there were generic\n> OP_N << OP_PUBKEY_N << OP_N \u00a0... template matching opcodes, but there aren't.\n\nI suppose they could be added if need be. Template matching opcodes\nmight come in useful later when clients only want to download\ntransactions of interest to them.\n\n> I'm also wondering if it makes sense to just support 2-of-2 (for\n> validate-on-multiple-devices) and 2-of-3 (for escrow) for now.\n\nGiven the costs involved with adding new transaction types, I'd go for\nallowing any number of signatures up to the max.\n\n> I think all of these could use a new type of bitcoin payment address;\n> it might make sense for THAT to be generic, maybe containing:\n> \u00a0version byte\n> \u00a0m\n> \u00a0n\n> \u00a0hash of xor of all n public keys\n> \u00a0checksum\n\nI don't understand what this is for. For triggering such a transaction\nvia the UI, I think establishing a higher level protocol would be\nneeded. It's a separate step.\n\nFor instance, it's not safe to use escrow until you've checked that\nthe escrow key is owned by who you think it is. Otherwise a buyer\ncould give you a 2-of-3 transaction where they own both keys. So there\nneeds to be some kind of protocol (probably HTTP based) where the\nbuyer communicates to the merchant a list of acceptable escrow\nagencies, the merchant intersects with the list of agencies it\naccepts, there needs to be a way to request a pubkey from a remote\ndomain, one side needs to be able to challenge that domain with a\nnonce, etc. It's quite complicated and would need to be specced out\nindependently of supporting multipay transactions.\n\n> I'm most interested in the 2-of-2 case; I think merchants and\n> exchanges need bitcoin deposit/payment addresses that they can make\n> secure by requiring a 2-step signature process for spending those\n> funds.\n\nYes it's one way to achieve security. Having BitBanks that store your\ncoins and require you to verify tx acceptance with an external device\nis even stronger, because that external device can be guaranteed\nvirus/clone-proof. Some banks do this today for wire transfers (they\nimplicitly assume you get the wire details out of band or that no\nvirus can rewrite wiring instructions to point somewhere else).\n\nBut it'll be a while yet before any such company arises. Until then\n2-of-2 transactions are probably a good halfway point."
+            },
+            {
+                "author": "Gavin Andresen",
+                "date": "2011-06-22T15:32:49",
+                "message_text_only": "...\n>> I think all of these could use a new type of bitcoin payment address;\n>> it might make sense for THAT to be generic, maybe containing:\n>> \u00a0version byte\n>> \u00a0m\n>> \u00a0n\n>> \u00a0hash of xor of all n public keys\n>> \u00a0checksum\n>\n> I don't understand what this is for. For triggering such a transaction\n> via the UI, I think establishing a higher level protocol would be\n> needed. It's a separate step.\n\nYou're right, it doesn't make sense.  The use case I would like to work is:\n\nI setup an escrow that requires m of n signatures to release funds,\nsecurely getting public keys from the other n-1 parties.\n\nNow we all need to fund the escrow. Or maybe other people can fund the\nescrow (it just takes m of n of us to decide when/how/where to spend\nthe funds).\n\nIt would be spiffy to publish a new type of bitcoin address that is an\n\"m of n address\", that anybody could pay into, but would require m of\nn signatures to spend.  Publishing a really really long address with\nall n public keys would work.\n\nIt would be great if the \"higher level protocol\" for pay-to-escrow was\njust get a bitcoin address via https (or other secure mechanism), like\nwe do now for pay-to-single-party.  Where the person you're paying has\ntheir own mechanisms for generating or fetching/authenticating the\npublic keys, and knows which bitcoin addresses they've published.\n\nAll of which makes me wonder if the straightforward \"n PUBKEYS m\nCHECKMULTISIG\" transaction type is the right thing to do.\nFollowing the pattern of our standard DUP HASH160 etc. transaction\ntype, maybe 2 of 2 and 2 of three should be:\n\n2DUP ADD HASH160 ...hash(pubkey1+2)... EQUALVERIFY 2 2 ROLL CHECKMULTISIGVERIFY\n3DUP ADD  ADD HASH160 ...hash(pubkey1+2+3)... EQUALVERIFY 2 3 ROLL\nCHECKMULTISIGVERIFY\n\nSpending those transactions would mean putting the m signatures and\nthe n public keys in the TxIn, but sending funds you'd only need the\nhash of the sum of the public keys.\n\n-- \n--\nGavin Andresen\nhttp://clearcoin.com/"
+            },
+            {
+                "author": "Mike Hearn",
+                "date": "2011-06-22T16:02:05",
+                "message_text_only": "> All of which makes me wonder if the straightforward \"n PUBKEYS m\n> CHECKMULTISIG\" transaction type is the right thing to do.\n\nAs far as I understand the only reason for hashing the public key is\nfor typing convenience. Otherwise we'd all just pass raw public keys\naround and use the simple form seen in the direct-to-ip case.\n\nBut as there'd need to be a higher level protocol on top of the\nmultipay transactions in order to verify who the other parties are,\nthere's no need for typing convenience. It'd all be done\nautomatically."
+            },
+            {
+                "author": "bgroff at lavabit.com",
+                "date": "2011-06-22T16:23:46",
+                "message_text_only": "Gavin said:\n\n> It would be spiffy to publish a new type of bitcoin address that is an\n> \"m of n address\", that anybody could pay into, but would require m of\n> n signatures to spend.  Publishing a really really long address with\n> all n public keys would work.\n\nI currently have 2,ADDR1,ADDR2,ADDR3 (2-of-3 example) as this new address\ntype.\n\n>\n> It would be great if the \"higher level protocol\" for pay-to-escrow was\n> just get a bitcoin address via https (or other secure mechanism), like\n> we do now for pay-to-single-party.  Where the person you're paying has\n> their own mechanisms for generating or fetching/authenticating the\n> public keys, and knows which bitcoin addresses they've published.\n\nAgreed.\n\n> All of which makes me wonder if the straightforward \"n PUBKEYS m\n> CHECKMULTISIG\" transaction type is the right thing to do.\n> Following the pattern of our standard DUP HASH160 etc. transaction\n> type, maybe 2 of 2 and 2 of three should be:\n>\n> 2DUP ADD HASH160 ...hash(pubkey1+2)... EQUALVERIFY 2 2 ROLL\n> CHECKMULTISIGVERIFY\n> 3DUP ADD  ADD HASH160 ...hash(pubkey1+2+3)... EQUALVERIFY 2 3 ROLL\n> CHECKMULTISIGVERIFY\n>\n> Spending those transactions would mean putting the m signatures and\n> the n public keys in the TxIn, but sending funds you'd only need the\n> hash of the sum of the public keys.\n\nThis is similar to the way the current implementation works.  It uses\nHASH160, but there's no attempt to save space by hashing the sum of the\npubkeys.  The major advantage of summing is shorter address for the end\nuser to copy-paste.  The disadvantage is the need for long term storage of\nthe key set so you know what keys to sign with.\n\n> --\n> Gavin Andresen\n> http://clearcoin.com/\n\n--\nBobby Groff"
+            },
+            {
+                "author": "bgroff at lavabit.com",
+                "date": "2011-06-22T19:33:12",
+                "message_text_only": "> Gavin said:\n>> 3DUP ADD  ADD HASH160 ...hash(pubkey1+2+3)... EQUALVERIFY 2 3 ROLL\n>> CHECKMULTISIGVERIFY\n\nOn second thought, I'm not sure this is workable.  You would have to\ndistribute each party's pubkey ahead of time, otherwise you run the risk\nthat a party falls off the face of the earth and then you can't provide\nthe pubkeys to have hash(pubkey1+2+3) EQUALVERIFY.\n\nIf you have to distribute the pubkeys ahead of time, then the reduction in\naddress length becomes moot.\n\nSo it seems to be either distribute the pubkeys or distribute the\nhash160(pubkey)'s.\n\n--\nBobby Groff"
+            },
+            {
+                "author": "bgroff at lavabit.com",
+                "date": "2011-06-22T20:44:38",
+                "message_text_only": "Gavin wrote:\n\n> It would be spiffy to publish a new type of bitcoin address that is an\n> \"m of n address\", that anybody could pay into, but would require m of\n> n signatures to spend.  Publishing a really really long address with\n> all n public keys would work.\n\nHere's a strawman use-case for a browser centric flow for a 2-of-3 scenario.\n\nFunding:\n\n* User is on Merchant site on the checkout page\n* User selects a transaction Observer (I'm trying to get away from using\nthe word escrow, because the funds are not held by the third party)\n* Merchant redirects to the Observer, passing in the Merchant's payout\naddress\n* The User enters User's address\n* Observer presents multisign address\n\"2,merchant-addr,user-addr,observer-addr\" and terms and conditions - i.e.\nunder what circumstances the Observer will sign\n* User copy/pastes the multisign address to their bitcoin client and sends\nfunds\n* After some blocks go by, merchant ships\n\nRedemption:\n\n* Merchant reminds User to release funds\n* User creates a partial tx paying out to merchant-addr and emails or\ncopy-pastes to Merchant\n* Merchant signs and publishes the tx\n\nFunding requires two pastes and redemption requires one.  A browser\nplug-in would reduce the User effort to a couple of confirmatory clicks -\n\"do you want to send X BTC to Merchant Y with Observer Z?\" and \"do you\nwant to release X BTC to Merchant Y?\".\n\n--\nBobby Groff"
+            }
+        ],
+        "thread_summary": {
+            "title": "Add scriptPubKey enforced sendescrow and redeemescrow API calls",
+            "categories": [
+                "Bitcoin-development",
+                "PULL"
+            ],
+            "authors": [
+                "bgroff at lavabit.com",
+                "Gavin Andresen",
+                "Mike Hearn"
+            ],
+            "messages_count": 11,
+            "total_messages_chars_count": 14282
+        }
+    },
+    {
+        "title": "[Bitcoin-development] Development priorities",
+        "thread_messages": [
+            {
+                "author": "Gavin Andresen",
+                "date": "2011-06-16T16:32:57",
+                "message_text_only": "Right!  I'm back from the CIA, and trying to ignore all the reporters\nwho want to talk with me.\n\nI want to do a quick brain dump on what I think the short-term\ndevelopment priorities are.  Here's my list:\n\n1) Scaling-up issues, like disconnections when downloading the block chain.\n\n2) Wallet security.\n\n3) Unit testing framework.  There was a PULL that had the start of\nboost unit tests; I think that is a critical need, along with a good\nsuite of test cases.\n\nThose are the big issues for me.  Anything that slows those down I'm\ngoing to ignore (example: love the idea of escrow transactions, but I\ndo NOT want to add nifty new features when we're having trouble\nkeeping the features we're using now working properly).\n\nDoes everybody agree those are the critical priorities? (try not to\nlet this thread wander into a discussion of HOW to do stuff, just WHAT\nthe priorities aught to be)\n\n\n-- \n--\nGavin Andresen\nhttp://clearcoin.com/"
+            },
+            {
+                "author": "Luke-Jr",
+                "date": "2011-06-16T17:12:41",
+                "message_text_only": "I'd put wallet security before scaling, but inevitably, I'm not sure there's \ntoo much anyone can do about that. Even if the wallet is encrypted, it just \ntakes a little more complex code to steal funds if you've infected your \ntarget.\n\nOn Thursday, June 16, 2011 12:32:57 PM Gavin Andresen wrote:\n> Right!  I'm back from the CIA, and trying to ignore all the reporters\n> who want to talk with me.\n> \n> I want to do a quick brain dump on what I think the short-term\n> development priorities are.  Here's my list:\n> \n> 1) Scaling-up issues, like disconnections when downloading the block \nchain.\n> \n> 2) Wallet security.\n> \n> 3) Unit testing framework.  There was a PULL that had the start of\n> boost unit tests; I think that is a critical need, along with a good\n> suite of test cases.\n> \n> Those are the big issues for me.  Anything that slows those down I'm\n> going to ignore (example: love the idea of escrow transactions, but I\n> do NOT want to add nifty new features when we're having trouble\n> keeping the features we're using now working properly).\n> \n> Does everybody agree those are the critical priorities? (try not to\n> let this thread wander into a discussion of HOW to do stuff, just WHAT\n> the priorities aught to be)"
+            },
+            {
+                "author": "Jeff Garzik",
+                "date": "2011-06-16T17:59:56",
+                "message_text_only": "On Thu, Jun 16, 2011 at 12:32 PM, Gavin Andresen\n<gavinandresen at gmail.com> wrote:\n> 1) Scaling-up issues, like disconnections when downloading the block chain.\n>\n> 2) Wallet security.\n\nAgreed, though security professionals (and luke-jr) are already\npointing out the wallet crypto mainly eliminates a bit of bad PR,\nrather than being a major crime deterrent.\n\nzooko on IRC had a pretty good suggestion:  introduce a built-in\nfacility for air-gapped wallets (multiple wallets), so that loss of\nyour everyday transactional wallet does not mean loss of everything.\n\nYou can do this manually, but we need something for all the people who\n(a) don't know crypto, and (b) simply download and run the client\nwithout thinking much about security.\n\n\n> 3) Unit testing framework. \u00a0There was a PULL that had the start of\n> boost unit tests; I think that is a critical need, along with a good\n> suite of test cases.\n\nThree points, on testing:\n\nT1) autotools has a minimal testing framework built into it.  \"make\ncheck\" builds, and then runs tests.  Each test is a program or script,\nthat returns 0 on success and 1 on failure.  \"make distcheck\" builds,\nruns tests, and then creates the distribution tarball if the tests\nsucceed.\n\nT2) I wouldn't narrow the focus to \"unit tests\", as stress tests and\nother comprehensive, automated tests are quite useful as well\n\nbut most importantly...\n\nT3) Don't hold v0.4 release for this.  As we say in kernel-land, we\nhave a test lab called \"the internet\"  Test suites have clear software\nengineering value, but they largely \"guard the past\" -- making sure\nyou don't repeat past mistakes, rather than being a good indicator of\npossible upcoming problems.  The best testing is always in the field.\nThat always finds more problems than unit testing ever does.\n\n-- \nJeff Garzik\nexMULTI, Inc.\njgarzik at exmulti.com"
+            },
+            {
+                "author": "Luke-Jr",
+                "date": "2011-06-16T18:18:46",
+                "message_text_only": "On Thursday, June 16, 2011 1:59:56 PM Jeff Garzik wrote:\n> > 2) Wallet security.\n> \n> Agreed, though security professionals (and luke-jr) are already\n> pointing out the wallet crypto mainly eliminates a bit of bad PR,\n> rather than being a major crime deterrent.\n> \n> zooko on IRC had a pretty good suggestion:  introduce a built-in\n> facility for air-gapped wallets (multiple wallets), so that loss of\n> your everyday transactional wallet does not mean loss of everything.\n\nEven if you do this, a cracker can still simply send your encrypted wallet to \nhimself, secure-delete your local one, kill your client, and demand you \npublish your password if you want some portion of your coins back.\n\nI'm not sure there's *any* defense for an insecure PC. Maybe Bitcoin will end \nup forcing people to reconsider their priorities when it comes to security..."
+            },
+            {
+                "author": "phantomcircuit",
+                "date": "2011-06-16T18:24:01",
+                "message_text_only": "On 06/16/11 20:18, Luke-Jr wrote:\n> On Thursday, June 16, 2011 1:59:56 PM Jeff Garzik wrote:\n>>> 2) Wallet security.\n>> Agreed, though security professionals (and luke-jr) are already\n>> pointing out the wallet crypto mainly eliminates a bit of bad PR,\n>> rather than being a major crime deterrent.\n>>\n>> zooko on IRC had a pretty good suggestion:  introduce a built-in\n>> facility for air-gapped wallets (multiple wallets), so that loss of\n>> your everyday transactional wallet does not mean loss of everything.\n> Even if you do this, a cracker can still simply send your encrypted wallet to \n> himself, secure-delete your local one, kill your client, and demand you \n> publish your password if you want some portion of your coins back.\n>\n> I'm not sure there's *any* defense for an insecure PC. Maybe Bitcoin will end \n> up forcing people to reconsider their priorities when it comes to security...\nJeff's scratch off branch modified to use email (as unique salt) and\npassword would eliminate the need for a static wallet.dat for 99% of the\nuserbase.  This seems like a much better solution than encryption. \n(Although obviously it's still vulnerable to key loggers)."
+            },
+            {
+                "author": "bgroff at lavabit.com",
+                "date": "2011-06-17T03:05:59",
+                "message_text_only": "> 1) Scaling-up issues, like disconnections when downloading the block\n> chain.\n>\n> 2) Wallet security.\n>\n> 3) Unit testing framework.  There was a PULL that had the start of\n> boost unit tests; I think that is a critical need, along with a good\n> suite of test cases.\n\nI agree that these are critical and I'd love to help, especially on #2 and\n#3.  #3 will, by necessity, include a thorough review of the code, which\nmay uncover latent issues.\n\nI think that for #2 it would also be good to publish a \"Best security\npractices\" document to try and educate the user base.\n\n> Those are the big issues for me.  Anything that slows those down I'm\n> going to ignore (example: love the idea of escrow transactions, but I\n> do NOT want to add nifty new features when we're having trouble\n> keeping the features we're using now working properly).\n\nThat is understandable.  However, something to think about later is that\nmulti-signature coins can help with #2, even with compromised end-user\nmachines.\n\n--\nBobby Groff"
+            },
+            {
+                "author": "Mike Hearn",
+                "date": "2011-06-19T14:26:32",
+                "message_text_only": "Probably patches for this bug would also be high priority:\n\n   http://forum.bitcoin.org/index.php?topic=19168.0\n\nIt should be an easy fix.\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110619/01a17fed/attachment.html>"
+            }
+        ],
+        "thread_summary": {
+            "title": "Development priorities",
+            "categories": [
+                "Bitcoin-development"
+            ],
+            "authors": [
+                "Jeff Garzik",
+                "Luke-Jr",
+                "phantomcircuit",
+                "Mike Hearn",
+                "Gavin Andresen",
+                "bgroff at lavabit.com"
+            ],
+            "messages_count": 7,
+            "total_messages_chars_count": 7351
+        }
+    },
+    {
+        "title": "[Bitcoin-development] Roadmap for autotools / Qt gui merge",
+        "thread_messages": [
+            {
+                "author": "John Smith",
+                "date": "2011-06-17T06:42:30",
+                "message_text_only": "Hello,\n\nI think my Qt GUI is pretty much ready for merging. I've been using it for a\nwhile and all functionality works.\n\nWhat is the current roadmap for including the autotools build system, so\nthat it will be possible to support multiple GUIs? 0.4.0?\n\nJS\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110617/f52640b9/attachment.html>"
+            },
+            {
+                "author": "Brendan Molloy",
+                "date": "2011-06-17T07:05:16",
+                "message_text_only": "Is there a link to this GUI code?\n\nJohn Smith wrote:\n> Hello,\n> \n> I think my Qt GUI is pretty much ready for merging. I've been using it for a\n> while and all functionality works.\n> \n> What is the current roadmap for including the autotools build system, so\n> that it will be possible to support multiple GUIs? 0.4.0?\n> \n> JS\n> \n> \n> ------------------------------------------------------------------------------\n> EditLive Enterprise is the world's most technically advanced content\n> authoring tool. Experience the power of Track Changes, Inline Image\n> Editing and ensure content is compliant with Accessibility Checking.\n> http://p.sf.net/sfu/ephox-dev2dev\n> \n> _______________________________________________\n> Bitcoin-development mailing list\n> Bitcoin-development at lists.sourceforge.net\n> https://lists.sourceforge.net/lists/listinfo/bitcoin-development\n\n-- \nRegards,\nBrendan Molloy\n\nM: +61 434 069 776\nT: @piecritic\nW: http://bbqsrc.net\nE: brendan at bbqsrc.net"
+            },
+            {
+                "author": "Pieter Wuille",
+                "date": "2011-06-17T10:31:25",
+                "message_text_only": "On Fri, Jun 17, 2011 at 06:42:30AM +0000, John Smith wrote:\n> Hello,\n> \n> I think my Qt GUI is pretty much ready for merging. I've been using it for a\n> while and all functionality works.\n> \n> What is the current roadmap for including the autotools build system, so\n> that it will be possible to support multiple GUIs? 0.4.0?\n\nI'm in favor of merging autotools now, unless there are still known issues with\nit, such as mingw32 compatibility?\n\nIf the Qt port is functionally complete and stable, I'd vote to have it merged as\nwell under these conditions:\n* the changes to the 'core' are minimal/trivial\n* marked as 'experimental', and not enabled by default\n\nThe only disadvantage of another GUI is that the (necessary) cleanup of RPC/GUI\ncode will now need makes changes in 3 places instead of 2, but as I understand\nit, there are much more people willing to work on Qt code than on wx code?\n\n-- \nPieter"
+            },
+            {
+                "author": "Luke-Jr",
+                "date": "2011-06-17T13:29:54",
+                "message_text_only": "On Friday, June 17, 2011 6:31:25 AM Pieter Wuille wrote:\n> The only disadvantage of another GUI is that the (necessary) cleanup of\n> RPC/GUI code will now need makes changes in 3 places instead of 2, but as\n> I understand it, there are much more people willing to work on Qt code\n> than on wx code?\n\nI'm not sure the Wallet protocol implementation needs to touch the GUI code at \nall, except when porting the GUI to use it. Therefore, if the code is already \nwritten, I don't see any harm in merging it."
+            },
+            {
+                "author": "Douglas Huff",
+                "date": "2011-06-17T14:10:35",
+                "message_text_only": "Agreed. The sooner qt gets merged the sooner real GUI improvements will be\nmade.\nOn Jun 17, 2011 8:30 AM, \"Luke-Jr\" <luke at dashjr.org> wrote:\n> On Friday, June 17, 2011 6:31:25 AM Pieter Wuille wrote:\n>> The only disadvantage of another GUI is that the (necessary) cleanup of\n>> RPC/GUI code will now need makes changes in 3 places instead of 2, but as\n>> I understand it, there are much more people willing to work on Qt code\n>> than on wx code?\n>\n> I'm not sure the Wallet protocol implementation needs to touch the GUI\ncode at\n> all, except when porting the GUI to use it. Therefore, if the code is\nalready\n> written, I don't see any harm in merging it.\n>\n>\n------------------------------------------------------------------------------\n> EditLive Enterprise is the world's most technically advanced content\n> authoring tool. Experience the power of Track Changes, Inline Image\n> Editing and ensure content is compliant with Accessibility Checking.\n> http://p.sf.net/sfu/ephox-dev2dev\n> _______________________________________________\n> Bitcoin-development mailing list\n> Bitcoin-development at lists.sourceforge.net\n> https://lists.sourceforge.net/lists/listinfo/bitcoin-development\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110617/0ec9e113/attachment.html>"
+            },
+            {
+                "author": "Gavin Andresen",
+                "date": "2011-06-17T16:27:22",
+                "message_text_only": "I'm in favor of dropping the wxWidgets GUI and replacing it with a Qt\nGUI. I think supporting more than one GUI for the reference client is\na bad idea.\n\nQt is LGPL, so license for that is not an issue.\nJohn, you willing to release your code under the bitcoin MIT license?\n\nEverybody else:  anybody object to replacing \"the devil we know\"\n(wxWidgets) with Qt?\n\n-- \n--\nGavin Andresen"
+            },
+            {
+                "author": "Luke-Jr",
+                "date": "2011-06-17T20:37:07",
+                "message_text_only": "On Friday, June 17, 2011 12:27:22 PM Gavin Andresen wrote:\n> I'm in favor of dropping the wxWidgets GUI and replacing it with a Qt\n> GUI. I think supporting more than one GUI for the reference client is\n> a bad idea.\n> \n> Qt is LGPL, so license for that is not an issue.\n> John, you willing to release your code under the bitcoin MIT license?\n> \n> Everybody else:  anybody object to replacing \"the devil we know\"\n> (wxWidgets) with Qt?\n\nSo long as we can get a solid name for it. Obviously I can't continue to call \nit wxBitcoin if it's strictly Qt..."
+            },
+            {
+                "author": "Jeff Garzik",
+                "date": "2011-06-17T22:59:00",
+                "message_text_only": "On Fri, Jun 17, 2011 at 4:37 PM, Luke-Jr <luke at dashjr.org> wrote:\n> So long as we can get a solid name for it. Obviously I can't continue to call\n> it wxBitcoin if it's strictly Qt...\n\nI've started calling the github/bitcoin/bitcoin.git the Satoshi\nClient, GUI or not.\n\n-- \nJeff Garzik\nexMULTI, Inc.\njgarzik at exmulti.com"
+            },
+            {
+                "author": "Pieter Wuille",
+                "date": "2011-06-19T00:30:49",
+                "message_text_only": "On Fri, Jun 17, 2011 at 06:42:30AM +0000, John Smith wrote:\n> Hello,\n> \n> I think my Qt GUI is pretty much ready for merging. I've been using it for a\n> while and all functionality works.\n> \n> What is the current roadmap for including the autotools build system, so\n> that it will be possible to support multiple GUIs? 0.4.0?\n\nThe consensus seems to be to merge autotools and qtgui. However, autotools is\napparently not tested (enough) on native windows and osx platforms.\n\nAnyone on this list with either development environnement, and willingness\nto test?\n\n-- \nPieter"
+            },
+            {
+                "author": "Pieter Wuille",
+                "date": "2011-06-22T14:18:37",
+                "message_text_only": "On Sun, Jun 19, 2011 at 02:30:49AM +0200, Pieter Wuille wrote:\n> The consensus seems to be to merge autotools and qtgui. However, autotools is\n> apparently not tested (enough) on native windows and osx platforms.\n> \n> Anyone on this list with either development environnement, and willingness\n> to test?\n\nJaromil has his autotools branch rebased against git master, and included Mark's\nNOSIGPIPE/NOSIGNAL patch (needs a commit summary, though).\n\nCan people test this compiles+works on several systems (ubuntu, fedora(?), mingw\ncrosscompile, osx, ...)?\n\n  See https://github.com/jaromil/bitcoin/commits/autotools3\n\nFor me, it works on Ubuntu 10.10 amd64, including wx gui.\n\n-- \nPieter"
+            },
+            {
+                "author": "Luke-Jr",
+                "date": "2011-06-19T01:37:26",
+                "message_text_only": "On Friday, June 17, 2011 2:42:30 AM John Smith wrote:\n> I think my Qt GUI is pretty much ready for merging. I've been using it for\n> a while and all functionality works.\n\nBefore this gets merged, I'd like to check: does it work ok if Qt is built \nwithout glib support?"
+            }
+        ],
+        "thread_summary": {
+            "title": "Roadmap for autotools / Qt gui merge",
+            "categories": [
+                "Bitcoin-development"
+            ],
+            "authors": [
+                "Jeff Garzik",
+                "Luke-Jr",
+                "Brendan Molloy",
+                "Pieter Wuille",
+                "Douglas Huff",
+                "Gavin Andresen",
+                "John Smith"
+            ],
+            "messages_count": 11,
+            "total_messages_chars_count": 6964
+        }
+    },
+    {
+        "title": "[Bitcoin-development] Roadmap for autotools / Qt gui merge [Mac update]",
+        "thread_messages": [
+            {
+                "author": "Mark Visser",
+                "date": "2011-06-20T02:34:03",
+                "message_text_only": "Hi everyone,\n\nI spent some time today with the bitcoin-qt client and autotools on mac. The qt client builds and runs with a few small changes (mostly just #including boost/filesystem/operations.hpp in a few places).\n\nAutotools + qt will take a bit longer. I've got something *almost* working, but I won't have a chance to finish it for the rest of the week. I'll push the changes to github tomorrow (Monday) so anyone else can take a crack at it if they so wish.\n\ncheers,\n-Mark\n\nOn 2011-06-18, at 8:30 PM, Pieter Wuille wrote:\n\n> On Fri, Jun 17, 2011 at 06:42:30AM +0000, John Smith wrote:\n>> Hello,\n>> \n>> I think my Qt GUI is pretty much ready for merging. I've been using it for a\n>> while and all functionality works.\n>> \n>> What is the current roadmap for including the autotools build system, so\n>> that it will be possible to support multiple GUIs? 0.4.0?\n> \n> The consensus seems to be to merge autotools and qtgui. However, autotools is\n> apparently not tested (enough) on native windows and osx platforms.\n> \n> Anyone on this list with either development environnement, and willingness\n> to test?\n> \n> -- \n> Pieter\n> \n> \n> ------------------------------------------------------------------------------\n> EditLive Enterprise is the world's most technically advanced content\n> authoring tool. Experience the power of Track Changes, Inline Image\n> Editing and ensure content is compliant with Accessibility Checking.\n> http://p.sf.net/sfu/ephox-dev2dev\n> _______________________________________________\n> Bitcoin-development mailing list\n> Bitcoin-development at lists.sourceforge.net\n> https://lists.sourceforge.net/lists/listinfo/bitcoin-development"
+            }
+        ],
+        "thread_summary": {
+            "title": "Roadmap for autotools / Qt gui merge ",
+            "categories": [
+                "Bitcoin-development",
+                "Mac update"
+            ],
+            "authors": [
+                "Mark Visser"
+            ],
+            "messages_count": 1,
+            "total_messages_chars_count": 1658
+        }
+    },
+    {
+        "title": "[Bitcoin-development] Wallet class merged -- rebasing needed",
+        "thread_messages": [
+            {
+                "author": "Jeff Garzik",
+                "date": "2011-06-19T02:12:32",
+                "message_text_only": "OK, sipa pulled his wallet code movement + wallet class stuff.\n\nWallet import/export and crypto will need a rebase.  Other code will\ntoo, but those are the big ticket items that we want to merge in the\nshort term.\n\n-- \nJeff Garzik\nexMULTI, Inc.\njgarzik at exmulti.com"
+            }
+        ],
+        "thread_summary": {
+            "title": "Wallet class merged -- rebasing needed",
+            "categories": [
+                "Bitcoin-development"
+            ],
+            "authors": [
+                "Jeff Garzik"
+            ],
+            "messages_count": 1,
+            "total_messages_chars_count": 267
+        }
+    },
+    {
+        "title": "[Bitcoin-development] Bitcoin fun day!",
+        "thread_messages": [
+            {
+                "author": "Doug Huff",
+                "date": "2011-06-19T21:54:28",
+                "message_text_only": "In light of recent events in the \"bitcoin community\" I have decided that private disclosure of issues is doing nothing but making them more prevalent.\n\nIn light of this decision I would like to report multiple CSRF vulnerabilities in http://clearcoin.appspot.com .\n\nThis set of CSRFs are particularly nasty since this is hosted on appspot and uses google account auth. So long as you stay logged into your google account you are vulnerable to this CSRF.\n\nThings tested:\n  Changing refund address.\n  Releasing funds.\n\nPOC code (open this in any browser even from a local file):\n==========\n<html><head><title>test</title></head>\n  <body>\n  <form id=\"refund_address_form\" action=\"https://clearcoin.appspot.com/set_refund_address\" method=\"POST\"> \n      <label for=\"refund_address\">Your bitcoin address:</label> \n      <input type=\"text\" name=\"refund_address\" id=\"refund_address\" size=\"60\" value=\"PUT ANY ADDRESS HERE\"\n             class=\"text ui-widget-content ui-corner-all\" autofocus required placeholder=\"refund bitcoin address\"/> (required)\n  </form> \n  </body>\n</html>\n==========\n\nJavascript auto submittal, hiding in an iframe, and other obfuscation methods are left as an exercise to the list.\n\nThis site is run and maintained by Gavin Anderson, aka, the lead bitcoin maintainer.\n\nYou should know better Gavin.\n\n-- \nDouglas Huff\n\n\n-------------- next part --------------\nA non-text attachment was scrubbed...\nName: smime.p7s\nType: application/pkcs7-signature\nSize: 3737 bytes\nDesc: not available\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110619/eb27ed0c/attachment.p7s>\n-------------- next part --------------\nA non-text attachment was scrubbed...\nName: PGP.sig\nType: application/pgp-signature\nSize: 881 bytes\nDesc: This is a digitally signed message part\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110619/eb27ed0c/attachment.sig>"
+            },
+            {
+                "author": "Gavin Andresen",
+                "date": "2011-06-19T22:33:14",
+                "message_text_only": "Some of us take private disclosures of vulnerabilities very seriously.\n\nIn any case, the ClearCoin CSRF vulnerability is fixed.  Thank you for\nbringing it to my attention.\n\nOn Sun, Jun 19, 2011 at 5:54 PM, Doug Huff <dhuff at jrbobdobbs.org> wrote:\n> In light of this decision I would like to report multiple CSRF vulnerabilities in http://clearcoin.appspot.com .\n>\n> This set of CSRFs are particularly nasty since this is hosted on appspot and uses google account auth. So long as you stay logged into your google account you are vulnerable to this CSRF.\n\n\n-- \n--\nGavin Andresen\nhttp://clearcoin.com/"
+            },
+            {
+                "author": "Douglas Huff",
+                "date": "2011-06-19T22:36:27",
+                "message_text_only": "I know. Please do not take this as a personal attack. Blame MagicalTux's\nirresponsible behaviour as of late. :(\nOn Jun 19, 2011 5:34 PM, \"Gavin Andresen\" <gavinandresen at gmail.com> wrote:\n> Some of us take private disclosures of vulnerabilities very seriously.\n>\n> In any case, the ClearCoin CSRF vulnerability is fixed. Thank you for\n> bringing it to my attention.\n>\n> On Sun, Jun 19, 2011 at 5:54 PM, Doug Huff <dhuff at jrbobdobbs.org> wrote:\n>> In light of this decision I would like to report multiple CSRF\nvulnerabilities in http://clearcoin.appspot.com .\n>>\n>> This set of CSRFs are particularly nasty since this is hosted on appspot\nand uses google account auth. So long as you stay logged into your google\naccount you are vulnerable to this CSRF.\n>\n>\n> --\n> --\n> Gavin Andresen\n> http://clearcoin.com/\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110619/7d4ef3fb/attachment.html>"
+            }
+        ],
+        "thread_summary": {
+            "title": "Bitcoin fun day!",
+            "categories": [
+                "Bitcoin-development"
+            ],
+            "authors": [
+                "Douglas Huff",
+                "Gavin Andresen",
+                "Doug Huff"
+            ],
+            "messages_count": 3,
+            "total_messages_chars_count": 3494
+        }
+    },
+    {
+        "title": "[Bitcoin-development] More plausible mtgox.com post-mortem (Bitcoin fun week!)",
+        "thread_messages": [
+            {
+                "author": "Doug Huff",
+                "date": "2011-06-21T04:49:26",
+                "message_text_only": "Oh ya, forgot this tidbit. Thanks gmaxwell!:\n\nNot mentioned here is that fact that dozens of MTGOX hashed passwords were quietly disclosed on a hash cracking forum on Fri Jun 17, 2011 5:21 am \n(http://forum.insidepro.com/viewtopic.php?t=9124&postdays=0&postorder=asc&start=75&sid=1a9e31567fe815c0eea63c40c39fb707 post by \"georgeclooney\")\n\nSince the overwhelming majority but not all of the hashes match the mtgox database that was posted on this forum (now deleted) and elsewhere I suspect that this post may have been generated from an earlier dump than was disclosed on the forums and everywhere else after the big event.\n\nThis appears to be significantly ahead of the prior claimed breach, and is consistent with the great many other mtgox users claiming that their accounts were robbed prior to the big event on Sunday, which I believe would have been too early to be results of the mtgox database leak according to the official timeline re: auditor compromise.\n\nOn Jun 20, 2011, at 11:17 PM, Doug Huff wrote:\n\n> I have two independent sources claiming known SQLi vulnerabilities in MtGox.\n> \n> One of said SQLi vulnerabilties was confirmed to be patched on the 16th.\n> The other was not patched, to anyone's knowledge, at the time of the market crash and database leak. The one that was not patched could have plausibly been used to dump the user table.\n> \n> The details follow in these chat logs. POC for the referenced xss+csrf is also provided. Whether or not it is still an issue is not known for sure at this time as the site cannot be accessed.\n> \n> It has also been found that MtGox exposes it's admin user interface even if a user does not have the admin flag set on their account. As of now it is thought that most actions attempted to be used will throw permission errors. Once again. This cannot be confirmed at this time. https://mtgox.com/app/webroot/code/admin\n> \n> MagicalTux, now that your claim \"The site was not compromised with a SQL injection as many are reporting, so in effect the site was not hacked.\" Please respond. The truth this time.\n> \n> MagicalTux's official response at the time of this writing is also attached. It is available at:\n> https://support.mtgox.com/entries/20208066-huge-bitcoin-sell-off-due-to-a-compromised-account-rollback\n> \n> These logs are not modified except for user's hostmasks at their request due to MagicalTux's new found policy of committing libel against his users based on login logs, since he apparently doesn't keep order book logs for orders that go through immediately, by his own admission. Classy.\n> \n> Mirrors:\n> http://privatepaste.com/93e8a9cd64 (#bitcoin-hax log)\n> http://privatepaste.com/47a50cab5b (sig)\n> http://www.mediafire.com/?m7o4z3oz9nyd3v3 (#bitcoin-hax log)\n> http://www.mediafire.com/?nzcpa5mwpw9ccbb (sig)\n> http://privatepaste.com/e4bacfae37 (PovAddict log)\n> http://privatepaste.com/9dc5daf8a0 (sig)\n> http://www.mediafire.com/?bflr76anvv835ib (PovAddict log)\n> http://www.mediafire.com/?rl250c2dahw7dx9 (sig)\n> http://privatepaste.com/6dad3927d6 (XSS + CSRF)\n> http://privatepaste.com/45e5aa0d30 (sig)\n> http://www.mediafire.com/?synt5sjcbkl9zvq (XSS + CSRF)\n> http://www.mediafire.com/?uv7be34198pseoo (sig)\n\n-- \nDoug Huff\n\n\n-------------- next part --------------\nA non-text attachment was scrubbed...\nName: smime.p7s\nType: application/pkcs7-signature\nSize: 3737 bytes\nDesc: not available\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110620/11e15a1e/attachment.p7s>\n-------------- next part --------------\nA non-text attachment was scrubbed...\nName: PGP.sig\nType: application/pgp-signature\nSize: 881 bytes\nDesc: This is a digitally signed message part\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110620/11e15a1e/attachment.sig>"
+            }
+        ],
+        "thread_summary": {
+            "title": "More plausible mtgox.com post-mortem (Bitcoin fun week!)",
+            "categories": [
+                "Bitcoin-development"
+            ],
+            "authors": [
+                "Doug Huff"
+            ],
+            "messages_count": 1,
+            "total_messages_chars_count": 3780
+        }
+    },
+    {
+        "title": "[Bitcoin-development] Speeding up \"getbalance <account>\" calls",
+        "thread_messages": [
+            {
+                "author": "jan at uos.de",
+                "date": "2011-06-23T21:51:43",
+                "message_text_only": "Hi there!\n\nInstawallet has enjoyed steady growth and I'm running into a bottleneck\nnow with \"getbalance <someaccounthere>\" taking quite some time to\ncomplete. My understanding is, that this is because bitcoind runs\nthrough all relevant transactions each time anew to compute the balance.\nI was hoping the list could give me some pointers/ideas on how I can\nimprove this.\n\nI might start to do account handling completely in my application at\nsome point, but for now I would like to continue letting bitcoind handle\nthis, so I don't have to worry about thinks like block chain reorgs.\n\nBasically I don't have enough familiarity with the source code to feel\nconfident about doing fairly invasive changes. So right now I'm planning\nto implement a very simple cache (directly in bitcoind), which just\ncaches calls to getbalance and simply invalidates the whole cache as\nsoon as a new block or a transaction that affects the wallet comes in.\nI'm hoping this will help a little bit, although with blocks arriving\nevery 10 minutes on average it's not really the perfect solution.\n\nMaybe one step better would be to only invalidate cache entries that are\naffected by a new transaction or by transactions arriving in a block.\nThis would need to take block chain reorgs into account though, which\nseems fairly complicated. Maybe I could simply invalidate the whole\ncache on reorgs, which should be seldom enough that it's not a big\nproblem. Where would be a good place in the source code to hook into to\nnotice block chain reorgs?\n\nThe perfect solution would be, of course, if bitcoind could keep running\nbalances of all accounts and update them as new information becomes\navailable. But as I said, I don't feel that I have a good overview of\nall the corner cases to make such an improvement. I guess an extensive\ntest suite testing all sorts of esoteric block chain reorgs would really\nbe a nice thing to have. :-)\n\nRegards!\nJan"
+            },
+            {
+                "author": "John Smith",
+                "date": "2011-06-24T05:30:54",
+                "message_text_only": "Jan,\n\nOn Thu, Jun 23, 2011 at 9:51 PM, <jan at uos.de> wrote:\n\n> Hi there!\n>\n> Instawallet has enjoyed steady growth and I'm running into a bottleneck\n> now with \"getbalance <someaccounthere>\" taking quite some time to\n> complete. My understanding is, that this is because bitcoind runs\n> through all relevant transactions each time anew to compute the balance.\n> I was hoping the list could give me some pointers/ideas on how I can\n> improve this.\n>\n\nI think the easiest way to speed this up would be to scan the wallet every\ntime a block comes in or something else changes in the block chain (or, if\nyou prefer, some pre-set interval of N minutes). Then go over the entire\nwallet and the accumulate balances for all accounts. This could be done in\namortized linear time using a hash_map.\n\n1) This reduces the time the API takes to return the balance for an account\nto a predictable, very short time. Just the time to look up the balance in\nthe hash table (and return 0 on miss). The number crunching happens in the\nnetwork thread, not while you're waiting on the API.\n\n2) Less bug-prone than \"incremental caching\" as you propose, and doesn't\nrequire determining which accounts are influenced by a new block\n\n3) Block chain reorgs are no problem.\n\nJS\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110624/3762c70c/attachment.html>"
+            }
+        ],
+        "thread_summary": {
+            "title": "Speeding up \"getbalance <account>\" calls",
+            "categories": [
+                "Bitcoin-development"
+            ],
+            "authors": [
+                "jan at uos.de",
+                "John Smith"
+            ],
+            "messages_count": 2,
+            "total_messages_chars_count": 3352
+        }
+    },
+    {
+        "title": "[Bitcoin-development] [PULL] Wallet Private Key Encryption Take 3",
+        "thread_messages": [
+            {
+                "author": "Matt Corallo",
+                "date": "2011-06-27T01:20:23",
+                "message_text_only": "Rebased onto wallet class and ready for \"wtf is this crap\" messages ;)\n\nhttps://github.com/bitcoin/bitcoin/pull/352\n\nMatt \n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110627/0582dfc0/attachment.html>\n-------------- next part --------------\nA non-text attachment was scrubbed...\nName: signature.asc\nType: application/pgp-signature\nSize: 836 bytes\nDesc: This is a digitally signed message part\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110627/0582dfc0/attachment.sig>"
+            },
+            {
+                "author": "Matt Corallo",
+                "date": "2011-06-28T01:33:46",
+                "message_text_only": "OK, after a lot of good discussion and a tiny bit of results, I would\nsubmit that Wallet Encryption is in a pull-able state.  Can I get final\ncomments/ACKs\n\nMatt\n\nOn Mon, 2011-06-27 at 03:20 +0200, Matt Corallo wrote:\n> Rebased onto wallet class and ready for \"wtf is this crap\" messages ;)\n> \n> https://github.com/bitcoin/bitcoin/pull/352\n> \n> Matt \n-------------- next part --------------\nA non-text attachment was scrubbed...\nName: signature.asc\nType: application/pgp-signature\nSize: 836 bytes\nDesc: This is a digitally signed message part\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110628/b6f50e47/attachment.sig>"
+            }
+        ],
+        "thread_summary": {
+            "title": "Wallet Private Key Encryption Take 3",
+            "categories": [
+                "Bitcoin-development",
+                "PULL"
+            ],
+            "authors": [
+                "Matt Corallo"
+            ],
+            "messages_count": 2,
+            "total_messages_chars_count": 1253
+        }
+    },
+    {
+        "title": "[Bitcoin-development] Bitcoin app bundle inclusion",
+        "thread_messages": [
+            {
+                "author": "Doug Huff",
+                "date": "2011-06-27T19:36:08",
+                "message_text_only": "Hey Laszlo,\n\nWe're just wanting to make sure that it's ok to include your Info.plist and BitcoinAppIcon.icns into the upstream source repository so that osx build can be automated without needing external source requirements (outside of lib deps).\n\nIs this licensed under MIT or similar or would you be willing to put it in the Public Domain or other compatible license.\n\n-- \nDoug Huff\n\n\n-------------- next part --------------\nA non-text attachment was scrubbed...\nName: smime.p7s\nType: application/pkcs7-signature\nSize: 3737 bytes\nDesc: not available\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110627/911f9ce7/attachment.p7s>\n-------------- next part --------------\nA non-text attachment was scrubbed...\nName: PGP.sig\nType: application/pgp-signature\nSize: 881 bytes\nDesc: This is a digitally signed message part\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110627/911f9ce7/attachment.sig>"
+            }
+        ],
+        "thread_summary": {
+            "title": "Bitcoin app bundle inclusion",
+            "categories": [
+                "Bitcoin-development"
+            ],
+            "authors": [
+                "Doug Huff"
+            ],
+            "messages_count": 1,
+            "total_messages_chars_count": 952
+        }
+    },
+    {
+        "title": "[Bitcoin-development] [ANNOUNCE] BitCoinJ v0.2",
+        "thread_messages": [
+            {
+                "author": "Mike Hearn",
+                "date": "2011-06-27T20:46:11",
+                "message_text_only": "[also sent to bitcoin-development@]\n\nI'm pleased to announce BitCoinJ v0.2. There have been over 100 commits\nsince the first release back in March, which have added:\n\n   - Full support for block chain re-orgs, including recognition of dead\n   transactions (that will never be included in the chain).\n   - Persistence of the block chain using multiple, pluggable stores. A\n   BoundedOverheadBlockStore is provided that is suitable for usage on mobile\n   devices where low memory usage and instant startup time are requirements.\n   - A much larger test suite\n   - IRC, DNS  and seed list peer discovery\n   - ASN.1 key export\n   - Many many bugfixes and minor API improvements.\n\nThis release represents the work of many people. In particular I'd like to\nthank:\n\n   - Andreas Schildbach\n   - Miron Cuperman\n   - Gary Rowe\n   - Thilo Planz\n   - Micheal Swiggs\n   - Noa Resare\n   - John Sample\n   - Xiaofeng Guo\n\n-- \nGoogle Switzerland GmbH\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110627/4cbcfc89/attachment.html>"
+            },
+            {
+                "author": "Jim Nguyen",
+                "date": "2011-06-27T21:02:22",
+                "message_text_only": "This is great!  Good job guys!\n\nJim\n\nOn Mon, Jun 27, 2011 at 1:46 PM, Mike Hearn <mike at plan99.net> wrote:\n\n> [also sent to bitcoin-development@]\n>\n> I'm pleased to announce BitCoinJ v0.2. There have been over 100 commits\n> since the first release back in March, which have added:\n>\n>    - Full support for block chain re-orgs, including recognition of dead\n>    transactions (that will never be included in the chain).\n>    - Persistence of the block chain using multiple, pluggable stores. A\n>    BoundedOverheadBlockStore is provided that is suitable for usage on mobile\n>    devices where low memory usage and instant startup time are requirements.\n>    - A much larger test suite\n>    - IRC, DNS  and seed list peer discovery\n>    - ASN.1 key export\n>    - Many many bugfixes and minor API improvements.\n>\n> This release represents the work of many people. In particular I'd like to\n> thank:\n>\n>    - Andreas Schildbach\n>    - Miron Cuperman\n>    - Gary Rowe\n>    - Thilo Planz\n>    - Micheal Swiggs\n>    - Noa Resare\n>    - John Sample\n>    - Xiaofeng Guo\n>\n> --\n> Google Switzerland GmbH\n>\n>\n>\n> ------------------------------------------------------------------------------\n> All of the data generated in your IT infrastructure is seriously valuable.\n> Why? It contains a definitive record of application performance, security\n> threats, fraudulent activity, and more. Splunk takes this data and makes\n> sense of it. IT sense. And common sense.\n> http://p.sf.net/sfu/splunk-d2d-c2\n> _______________________________________________\n> Bitcoin-development mailing list\n> Bitcoin-development at lists.sourceforge.net\n> https://lists.sourceforge.net/lists/listinfo/bitcoin-development\n>\n>\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110627/4f60f38e/attachment.html>"
+            }
+        ],
+        "thread_summary": {
+            "title": "BitCoinJ v0.2",
+            "categories": [
+                "Bitcoin-development",
+                "ANNOUNCE"
+            ],
+            "authors": [
+                "Jim Nguyen",
+                "Mike Hearn"
+            ],
+            "messages_count": 2,
+            "total_messages_chars_count": 2993
+        }
+    },
+    {
+        "title": "[Bitcoin-development] [ANNOUNCE] BitCoinSharp",
+        "thread_messages": [
+            {
+                "author": "Mike Hearn",
+                "date": "2011-06-27T21:04:36",
+                "message_text_only": "This evening I'd also like to announce the BitCoinSharp project by\nNathan Baulch. It's big enough to deserve its own email, IMHO.\n\nNathan has done a complete port of BitCoinJ into C#, thus opening the\nworld of Bitcoin up to .NET developers everywhere.\n\nYou can browse the code here:\n\n  http://code.google.com/p/bitcoinsharp/source/browse/\n\nVisual Studio SLN files are provided to help you get started. The\nPingService example is a good place to start reading:\n\n  http://code.google.com/p/bitcoinsharp/source/browse/src/Examples/PingService.cs\n\nI'm hopeful that we've now covered nearly all the bases in terms of\nlanguages and platforms. Everyone should be able to write interesting\nBitcoin apps no matter what their background or preferred toolchain."
+            },
+            {
+                "author": "Mike Hearn",
+                "date": "2011-06-28T06:34:14",
+                "message_text_only": "Sure.\n\nOn Tue, Jun 28, 2011 at 2:49 AM, solar <laszlo.hanyecz at heliacal.net> wrote:\n> Great work on this guys! \u00a0I have a small request though.. could you please include the recent fix to join a random #bitcoinXX channel on IRC (instead of #bitcoin)? \u00a0It is in the c++ code that way, it's just a randomly selected number from 00 to 99.\n>\n> Thanks,\n> Laszlo Hanyecz\n>\n>\n> On Jun 27, 2011, at 5:04 PM, Mike Hearn wrote:\n>\n>> This evening I'd also like to announce the BitCoinSharp project by\n>> Nathan Baulch. It's big enough to deserve its own email, IMHO.\n>>\n>> Nathan has done a complete port of BitCoinJ into C#, thus opening the\n>> world of Bitcoin up to .NET developers everywhere.\n>>\n>> You can browse the code here:\n>>\n>> \u00a0http://code.google.com/p/bitcoinsharp/source/browse/\n>>\n>> Visual Studio SLN files are provided to help you get started. The\n>> PingService example is a good place to start reading:\n>>\n>> \u00a0http://code.google.com/p/bitcoinsharp/source/browse/src/Examples/PingService.cs\n>>\n>> I'm hopeful that we've now covered nearly all the bases in terms of\n>> languages and platforms. Everyone should be able to write interesting\n>> Bitcoin apps no matter what their background or preferred toolchain.\n>>\n>> ------------------------------------------------------------------------------\n>> All of the data generated in your IT infrastructure is seriously valuable.\n>> Why? It contains a definitive record of application performance, security\n>> threats, fraudulent activity, and more. Splunk takes this data and makes\n>> sense of it. IT sense. And common sense.\n>> http://p.sf.net/sfu/splunk-d2d-c2\n>> _______________________________________________\n>> Bitcoin-development mailing list\n>> Bitcoin-development at lists.sourceforge.net\n>> https://lists.sourceforge.net/lists/listinfo/bitcoin-development\n>\n>"
+            }
+        ],
+        "thread_summary": {
+            "title": "BitCoinSharp",
+            "categories": [
+                "Bitcoin-development",
+                "ANNOUNCE"
+            ],
+            "authors": [
+                "Mike Hearn"
+            ],
+            "messages_count": 2,
+            "total_messages_chars_count": 2571
+        }
+    },
+    {
+        "title": "[Bitcoin-development] Fwd: Bitcoin app bundle inclusion",
+        "thread_messages": [
+            {
+                "author": "Doug Huff",
+                "date": "2011-06-27T22:10:23",
+                "message_text_only": "Begin forwarded message:\n\n> From: solar <laszlo.hanyecz at heliacal.net>\n> Date: June 27, 2011 5:09:12 PM CDT\n> To: Doug Huff <dhuff at jrbobdobbs.org>\n> Subject: Re: Bitcoin app bundle inclusion\n> \n> That's fine, I actually wanted to check it but wasn't sure where it belonged.  There isn't any license, it's just public domain.\n> \n> Thanks,\n> Laszlo\n> \n> \n> \n> On Jun 27, 2011, at 3:36 PM, Doug Huff wrote:\n> \n>> Hey Laszlo,\n>> \n>> We're just wanting to make sure that it's ok to include your Info.plist and BitcoinAppIcon.icns into the upstream source repository so that osx build can be automated without needing external source requirements (outside of lib deps).\n>> \n>> Is this licensed under MIT or similar or would you be willing to put it in the Public Domain or other compatible license.\n>> \n>> -- \n>> Doug Huff\n>> \n>> \n> \n\n-- \nDoug Huff\n\n\n-------------- next part --------------\nA non-text attachment was scrubbed...\nName: smime.p7s\nType: application/pkcs7-signature\nSize: 3737 bytes\nDesc: not available\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110627/ce64e496/attachment.p7s>\n-------------- next part --------------\nA non-text attachment was scrubbed...\nName: PGP.sig\nType: application/pgp-signature\nSize: 881 bytes\nDesc: This is a digitally signed message part\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110627/ce64e496/attachment.sig>"
+            }
+        ],
+        "thread_summary": {
+            "title": "Fwd: Bitcoin app bundle inclusion",
+            "categories": [
+                "Bitcoin-development"
+            ],
+            "authors": [
+                "Doug Huff"
+            ],
+            "messages_count": 1,
+            "total_messages_chars_count": 1414
+        }
+    },
+    {
+        "title": "[Bitcoin-development] Test away",
+        "thread_messages": [
+            {
+                "author": "Gavin Andresen",
+                "date": "2011-06-28T02:08:57",
+                "message_text_only": "I got Steve-from-the-Forum's boost unit test skeleton code compiling\nand running, so there's now a src/test directory and you can 'make -f\nmakefile.unix test_bitcoin'\n\nMore tests are very welcome. I'd welcome higher-level tests (not just\ncode unit tests), too.\n\nAnd speaking of testing:  if you know a good QA test manager type\nperson interested in bitcoin, I think we can wrangle up funding for\nsomebody to put together a team to help test bitcoin (and hopefully\npull requests). I think lack of testing resources for core bitocin is\na big weakness right now.\n\n-- \n--\nGavin Andresen"
+            }
+        ],
+        "thread_summary": {
+            "title": "Test away",
+            "categories": [
+                "Bitcoin-development"
+            ],
+            "authors": [
+                "Gavin Andresen"
+            ],
+            "messages_count": 1,
+            "total_messages_chars_count": 582
+        }
+    },
+    {
+        "title": "[Bitcoin-development] Fwd: Live mtgox.com trade matching bug.",
+        "thread_messages": [
+            {
+                "author": "Doug Huff",
+                "date": "2011-06-28T02:48:17",
+                "message_text_only": "Begin forwarded message:\n\n> From: Doug Huff <mith at jrbobdobbs.org>\n> Date: June 27, 2011 9:46:13 PM CDT\n> To: full-disclosure at lists.grok.org.uk, \"Mt.Gox\" <info at mtgox.com>\n> Cc: Bitcoin Dev Development <bitcoin-development at lists.sourceforge.net>\n> Subject: Live mtgox.com trade matching bug.\n> \n> Step 1: Have USD available for spending on mtgox.com.\n> Step 2: Put in a buy order large enough to drain your account. Low enough under the current trading price that it will not execute immediately.\n> Step 3: Withdraw all USD funds.\n> Step 4: Wait for market to fall enough to meet your order.\n> Step 5: ...(self explanatory)...\n> \n> There's a bit of luck in being able to take advantage, obviously.\n> \n> I would suggest you take the site down asap until this is corrected or publicly show how this order will never execute:\n> \n> ==========\n> Welcome <username removed> 0.00000000 \u0e3fTC 424.44901\n> Buying  138468.901  0.01  Active  1384.69  06/26 15:27  cancel\n> ==========\n> \n> I cannot guarantee this order will execute but from everything I've observed about the new trade matching code I have no reason to believe it will not.\n> \n> At the very least this could be used to influence market conditions if it is only a display bug.\n> \n> -- \n> Douglas Huff\n> \n> \n\n-- \nDoug Huff\n\n\n-------------- next part --------------\nA non-text attachment was scrubbed...\nName: smime.p7s\nType: application/pkcs7-signature\nSize: 3737 bytes\nDesc: not available\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110627/d3cb2cbe/attachment.p7s>\n-------------- next part --------------\nA non-text attachment was scrubbed...\nName: PGP.sig\nType: application/pgp-signature\nSize: 881 bytes\nDesc: This is a digitally signed message part\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110627/d3cb2cbe/attachment.sig>"
+            },
+            {
+                "author": "Mike Hearn",
+                "date": "2011-06-28T06:35:59",
+                "message_text_only": "Hi Doug,\n\nCould we keep the Mt Gox related stuff off bitcoin-development please?\nIt's not related to the core software.\n\nOn Tue, Jun 28, 2011 at 4:48 AM, Doug Huff <dhuff at jrbobdobbs.org> wrote:\n>\n>\n> Begin forwarded message:\n>\n>> From: Doug Huff <mith at jrbobdobbs.org>\n>> Date: June 27, 2011 9:46:13 PM CDT\n>> To: full-disclosure at lists.grok.org.uk, \"Mt.Gox\" <info at mtgox.com>\n>> Cc: Bitcoin Dev Development <bitcoin-development at lists.sourceforge.net>\n>> Subject: Live mtgox.com trade matching bug.\n>>\n>> Step 1: Have USD available for spending on mtgox.com.\n>> Step 2: Put in a buy order large enough to drain your account. Low enough under the current trading price that it will not execute immediately.\n>> Step 3: Withdraw all USD funds.\n>> Step 4: Wait for market to fall enough to meet your order.\n>> Step 5: ...(self explanatory)...\n>>\n>> There's a bit of luck in being able to take advantage, obviously.\n>>\n>> I would suggest you take the site down asap until this is corrected or publicly show how this order will never execute:\n>>\n>> ==========\n>> Welcome <username removed> 0.00000000 \u0e3fTC 424.44901\n>> Buying \u00a0138468.901 \u00a00.01 \u00a0Active \u00a01384.69 \u00a006/26 15:27 \u00a0cancel\n>> ==========\n>>\n>> I cannot guarantee this order will execute but from everything I've observed about the new trade matching code I have no reason to believe it will not.\n>>\n>> At the very least this could be used to influence market conditions if it is only a display bug.\n>>\n>> --\n>> Douglas Huff\n>>\n>>\n>\n> --\n> Doug Huff\n>\n>\n>\n> ------------------------------------------------------------------------------\n> All of the data generated in your IT infrastructure is seriously valuable.\n> Why? It contains a definitive record of application performance, security\n> threats, fraudulent activity, and more. Splunk takes this data and makes\n> sense of it. IT sense. And common sense.\n> http://p.sf.net/sfu/splunk-d2d-c2\n> _______________________________________________\n> Bitcoin-development mailing list\n> Bitcoin-development at lists.sourceforge.net\n> https://lists.sourceforge.net/lists/listinfo/bitcoin-development\n>\n>"
+            },
+            {
+                "author": "Luke-Jr",
+                "date": "2011-06-28T06:57:20",
+                "message_text_only": "On Tuesday, June 28, 2011 2:35:59 AM Mike Hearn wrote:\n> Could we keep the Mt Gox related stuff off bitcoin-development please?\n> It's not related to the core software.\n\nMtGox's code is just as related as BitcoinJ or any other Bitcoin software, \nIMO."
+            },
+            {
+                "author": "Mike Hearn",
+                "date": "2011-06-28T09:52:58",
+                "message_text_only": ">> Could we keep the Mt Gox related stuff off bitcoin-development please?\n>> It's not related to the core software.\n>\n> MtGox's code is just as related as BitcoinJ or any other Bitcoin software,\n> IMO.\n\nIt's closed source, so nobody here can do anything about it (unlike\nother software discussed here)."
+            },
+            {
+                "author": "Matt Corallo",
+                "date": "2011-06-28T11:54:31",
+                "message_text_only": "On Tue, 2011-06-28 at 11:52 +0200, Mike Hearn wrote:\n> >> Could we keep the Mt Gox related stuff off bitcoin-development please?\n> >> It's not related to the core software.\n> >\n> > MtGox's code is just as related as BitcoinJ or any other Bitcoin software,\n> > IMO.\n> \n> It's closed source, so nobody here can do anything about it (unlike\n> other software discussed here).\n\nAnd this is also no where near the right place to be disclosing security\nvulnerabilities.  Whether you like the guy/site or not, keep those prive\nfor a reasonable amount of time for them to be fixed (that means more\nthan an hour).\n\nMatt\n-------------- next part --------------\nA non-text attachment was scrubbed...\nName: signature.asc\nType: application/pgp-signature\nSize: 836 bytes\nDesc: This is a digitally signed message part\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110628/2bb09b36/attachment.sig>"
+            },
+            {
+                "author": "Doug Huff",
+                "date": "2011-06-28T13:24:26",
+                "message_text_only": "Begin forwarded message:\n\n> From: Doug Huff <dhuff at jrbobdobbs.org>\n> Date: June 27, 2011 11:28:28 PM CDT\n> To: Gavin Andresen <gavinandresen at gmail.com>\n> Subject: Re: [Bitcoin-development] Fwd: Live mtgox.com trade matching bug.\n> \n> Already talked to Jeff and agreed to stop posting them here. There is just currently no other forum for such reports. I think he was going to talk to you about starting a bitcoin-vendor-sec or similar list.\n> \n> I agree it does not belong there.\n> \n> On Jun 27, 2011, at 11:22 PM, Gavin Andresen wrote:\n> \n>> The bitcoin-development list is for discussion of core bitcoin\n>> development, not about Mt.Gox or other sites or software that uses\n>> bitcoin.\n>> \n>> -- \n>> --\n>> Gavin Andresen\n> \n> -- \n> Doug Huff\n> \n> \n\n-- \nDoug Huff\n\nOn Jun 28, 2011, at 1:35 AM, Mike Hearn wrote:\n\n> Hi Doug,\n> \n> Could we keep the Mt Gox related stuff off bitcoin-development please?\n> It's not related to the core software.\n> \n> On Tue, Jun 28, 2011 at 4:48 AM, Doug Huff <dhuff at jrbobdobbs.org> wrote:\n>> \n>> \n>> Begin forwarded message:\n>> \n>>> From: Doug Huff <mith at jrbobdobbs.org>\n>>> Date: June 27, 2011 9:46:13 PM CDT\n>>> To: full-disclosure at lists.grok.org.uk, \"Mt.Gox\" <info at mtgox.com>\n>>> Cc: Bitcoin Dev Development <bitcoin-development at lists.sourceforge.net>\n>>> Subject: Live mtgox.com trade matching bug.\n>>> \n>>> Step 1: Have USD available for spending on mtgox.com.\n>>> Step 2: Put in a buy order large enough to drain your account. Low enough under the current trading price that it will not execute immediately.\n>>> Step 3: Withdraw all USD funds.\n>>> Step 4: Wait for market to fall enough to meet your order.\n>>> Step 5: ...(self explanatory)...\n>>> \n>>> There's a bit of luck in being able to take advantage, obviously.\n>>> \n>>> I would suggest you take the site down asap until this is corrected or publicly show how this order will never execute:\n>>> \n>>> ==========\n>>> Welcome <username removed> 0.00000000 \u0e3fTC 424.44901\n>>> Buying  138468.901  0.01  Active  1384.69  06/26 15:27  cancel\n>>> ==========\n>>> \n>>> I cannot guarantee this order will execute but from everything I've observed about the new trade matching code I have no reason to believe it will not.\n>>> \n>>> At the very least this could be used to influence market conditions if it is only a display bug.\n>>> \n>>> --\n>>> Douglas Huff\n>>> \n>>> \n>> \n>> --\n>> Doug Huff\n>> \n>> \n>> \n>> ------------------------------------------------------------------------------\n>> All of the data generated in your IT infrastructure is seriously valuable.\n>> Why? It contains a definitive record of application performance, security\n>> threats, fraudulent activity, and more. Splunk takes this data and makes\n>> sense of it. IT sense. And common sense.\n>> http://p.sf.net/sfu/splunk-d2d-c2\n>> _______________________________________________\n>> Bitcoin-development mailing list\n>> Bitcoin-development at lists.sourceforge.net\n>> https://lists.sourceforge.net/lists/listinfo/bitcoin-development\n>> \n>> \n\n-- \nDoug Huff\n\n\n-------------- next part --------------\nA non-text attachment was scrubbed...\nName: smime.p7s\nType: application/pkcs7-signature\nSize: 3737 bytes\nDesc: not available\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110628/1d39d1a3/attachment.p7s>"
+            }
+        ],
+        "thread_summary": {
+            "title": "Fwd: Live mtgox.com trade matching bug.",
+            "categories": [
+                "Bitcoin-development"
+            ],
+            "authors": [
+                "Matt Corallo",
+                "Luke-Jr",
+                "Mike Hearn",
+                "Doug Huff"
+            ],
+            "messages_count": 6,
+            "total_messages_chars_count": 8717
+        }
+    },
+    {
+        "title": "[Bitcoin-development] satoshi client v0.4 priorities",
+        "thread_messages": [
+            {
+                "author": "Jeff Garzik",
+                "date": "2011-06-28T17:48:47",
+                "message_text_only": "(copying part of a conversation from IRC)\n\nIMO, wallet crypto and wallet import/export are the two \"must have\"\nfeatures for v0.4.  wallet crypto rationale is obvious.  sipa's wallet\nimport/export might need a rebase, but it seems important for further\nwallet security, such as printing out and storing a private key in a\nbank's safety deposit box.\n\nautotools and other stuff can wait, if they hold up the release of\nwallet crypto.\n\n-- \nJeff Garzik\nexMULTI, Inc.\njgarzik at exmulti.com"
+            },
+            {
+                "author": "Doug Huff",
+                "date": "2011-06-28T18:39:22",
+                "message_text_only": "sipa already rebased his showwallet tree. It's missing the segfault fix (or was yesterday) but said fix merges cleanly. I'm not entirely sure it's ready for pulling but it is in a functional state.\n\nOn Jun 28, 2011, at 12:48 PM, Jeff Garzik wrote:\n\n> (copying part of a conversation from IRC)\n> \n> IMO, wallet crypto and wallet import/export are the two \"must have\"\n> features for v0.4.  wallet crypto rationale is obvious.  sipa's wallet\n> import/export might need a rebase, but it seems important for further\n> wallet security, such as printing out and storing a private key in a\n> bank's safety deposit box.\n> \n> autotools and other stuff can wait, if they hold up the release of\n> wallet crypto.\n> \n> -- \n> Jeff Garzik\n> exMULTI, Inc.\n> jgarzik at exmulti.com\n> \n> ------------------------------------------------------------------------------\n> All of the data generated in your IT infrastructure is seriously valuable.\n> Why? It contains a definitive record of application performance, security \n> threats, fraudulent activity, and more. Splunk takes this data and makes \n> sense of it. IT sense. And common sense.\n> http://p.sf.net/sfu/splunk-d2d-c2\n> _______________________________________________\n> Bitcoin-development mailing list\n> Bitcoin-development at lists.sourceforge.net\n> https://lists.sourceforge.net/lists/listinfo/bitcoin-development\n\n-- \nDoug Huff\n\n\n-------------- next part --------------\nA non-text attachment was scrubbed...\nName: PGP.sig\nType: application/pgp-signature\nSize: 881 bytes\nDesc: This is a digitally signed message part\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110628/e85b0c9e/attachment.sig>"
+            },
+            {
+                "author": "Matt Corallo",
+                "date": "2011-06-28T19:50:28",
+                "message_text_only": "I believe he meant rebase onto wallet encryption.\n\nOn Tue, 2011-06-28 at 13:39 -0500, Doug Huff wrote:\n> sipa already rebased his showwallet tree. It's missing the segfault fix (or was yesterday) but said fix merges cleanly. I'm not entirely sure it's ready for pulling but it is in a functional state.\n> \n> On Jun 28, 2011, at 12:48 PM, Jeff Garzik wrote:\n> \n> > (copying part of a conversation from IRC)\n> > \n> > IMO, wallet crypto and wallet import/export are the two \"must have\"\n> > features for v0.4.  wallet crypto rationale is obvious.  sipa's wallet\n> > import/export might need a rebase, but it seems important for further\n> > wallet security, such as printing out and storing a private key in a\n> > bank's safety deposit box.\n> > \n> > autotools and other stuff can wait, if they hold up the release of\n> > wallet crypto.\n> > \n> > -- \n> > Jeff Garzik\n> > exMULTI, Inc.\n> > jgarzik at exmulti.com\n> > \n> > ------------------------------------------------------------------------------\n> > All of the data generated in your IT infrastructure is seriously valuable.\n> > Why? It contains a definitive record of application performance, security \n> > threats, fraudulent activity, and more. Splunk takes this data and makes \n> > sense of it. IT sense. And common sense.\n> > http://p.sf.net/sfu/splunk-d2d-c2\n> > _______________________________________________\n> > Bitcoin-development mailing list\n> > Bitcoin-development at lists.sourceforge.net\n> > https://lists.sourceforge.net/lists/listinfo/bitcoin-development\n> \n> ------------------------------------------------------------------------------\n> All of the data generated in your IT infrastructure is seriously valuable.\n> Why? It contains a definitive record of application performance, security \n> threats, fraudulent activity, and more. Splunk takes this data and makes \n> sense of it. IT sense. And common sense.\n> http://p.sf.net/sfu/splunk-d2d-c2\n> _______________________________________________ Bitcoin-development mailing list Bitcoin-development at lists.sourceforge.net https://lists.sourceforge.net/lists/listinfo/bitcoin-development\n\n-------------- next part --------------\nA non-text attachment was scrubbed...\nName: signature.asc\nType: application/pgp-signature\nSize: 836 bytes\nDesc: This is a digitally signed message part\nURL: <http://lists.linuxfoundation.org/pipermail/bitcoin-dev/attachments/20110628/210deb52/attachment.sig>"
+            }
+        ],
+        "thread_summary": {
+            "title": "satoshi client v0.4 priorities",
+            "categories": [
+                "Bitcoin-development"
+            ],
+            "authors": [
+                "Matt Corallo",
+                "Jeff Garzik",
+                "Doug Huff"
+            ],
+            "messages_count": 3,
+            "total_messages_chars_count": 4553
+        }
+    }
+]

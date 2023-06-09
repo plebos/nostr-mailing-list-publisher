@@ -1,0 +1,70 @@
+[
+    {
+        "title": "[Lightning-dev] golang wrapper of c-lightning",
+        "thread_messages": [
+            {
+                "author": "Alexander Federigo",
+                "date": "2017-07-10T22:45:17",
+                "message_text_only": "Hello, Christian.\nI'm going to write test for lightningnetwork/lnd, which will be include communicating between different lightning nodes implementations.\nIn particular I'd like to raise the network consisting of lnd and c-lightning nodes.\nCould you give some link on the golang wrapper of c-lightning, if there is one?\nThanks in advance.\nAlexander Federigo\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/lightning-dev/attachments/20170711/5792b1fe/attachment.html>"
+            }
+        ],
+        "thread_summary": {
+            "title": "golang wrapper of c-lightning",
+            "categories": [
+                "Lightning-dev"
+            ],
+            "authors": [
+                "Alexander Federigo"
+            ],
+            "messages_count": 1,
+            "total_messages_chars_count": 542
+        }
+    },
+    {
+        "title": "[Lightning-dev] Lightning Developers Biweekly Meeting Announce",
+        "thread_messages": [
+            {
+                "author": "Rusty Russell",
+                "date": "2017-07-12T23:27:04",
+                "message_text_only": "Hi all!\n\n\tEvery two weeks we've been running an informal Google Hangout\nfor implementers of the Lightning spec; as the spec is starting to\nfreeze, we've decided to formalize it a bit which means opening access\nto a wider audience.\n\n        The call is at 20:00 UTC every two weeks on Monday: next call is\non the 24th July.  We'll be using #lightning-dev on freenode's IRC\nservers to communicate as well: if you're working on the Lightning\nprotocol and want to attend, please send me a ping and I'll add you to\nthe invite.\n\n\tI'll produce an agenda (basically a list of outstanding PRs on\ngithub) and minutes each week: I'll post the latter to the ML here.\nThe last one can be found:\n\n\thttps://docs.google.com/document/d/1EbMxe_QZhpHo67eeiYHbJ-BvNKU1WhFd5WhJFeD9-DI/edit?usp=sharing\n\n\tThe routine with the spec itself is that from now on all\nnon-spelling/typo changes will require a vote with no objections from\ncall participants, or any devs unable to make it can veto or defer by\nemailing me in writing before the meeting.\n\nCheers!\nRusty."
+            }
+        ],
+        "thread_summary": {
+            "title": "Lightning Developers Biweekly Meeting Announce",
+            "categories": [
+                "Lightning-dev"
+            ],
+            "authors": [
+                "Rusty Russell"
+            ],
+            "messages_count": 1,
+            "total_messages_chars_count": 1038
+        }
+    },
+    {
+        "title": "[Lightning-dev] Minutes of Dev Meeting 2017-07-10",
+        "thread_messages": [
+            {
+                "author": "Rusty Russell",
+                "date": "2017-07-30T05:22:21",
+                "message_text_only": "https://docs.google.com/document/d/1ng6FaOLGS7ZQEsv3kn6W-t2GzQShhD7eFPz-1yFQZm0/edit?usp=sharing"
+            },
+            {
+                "author": "Rusty Russell",
+                "date": "2017-07-30T05:36:32",
+                "message_text_only": "Rusty Russell <rusty at rustcorp.com.au> writes:\n\n> https://docs.google.com/document/d/1ng6FaOLGS7ZQEsv3kn6W-t2GzQShhD7eFPz-1yFQZm0/edit?usp=sharing\n\nSome feedback, since I missed what seems like a very productive\ndiscussion!\n\n> HTLC floor created by second-level HTLC transactions \n> Pierre points out that should choose HTLC min high enough that don\u2019t run into issues.\n> Laolu points out this means that unable to send and claim small-ish amounts chain. \n> Laolu points out that would basically CREATE a dust output in the process.\n> LAOLU SUGGESTS THAT TRIM OUTPUT SPEC PORTION SHOULD ALSO SAY DON\u2019T CREATE DUST OUTPUT ON SECOND LEVEL TX\n\nI think it does already:\n\n  For every offered HTLC, if the HTLC amount minus the HTLC-timeout fee\n  would be less than `dust_limit_satoshis` set by the transaction owner,\n  the commitment transaction MUST NOT contain that output\n\n(Similarly for received HTLCs)\n\nie. don't create HTLC outputs which would need an HTLC tx with a dust\noutput.\n\n> Don\u2019t use sighash-all on the second-level HTLC transactions\n>   Laolu points out that this would allow us to coalesce many HTLC\n>   transactions into a single one. Saves on-chain foot print, and also\n>   allows to add more fees.  Basically like \u201cLighthouse\u201d (by hearn).\n\nSo, you're suggesting SIGHASH_SINGLE|SIGHASH_ANYONECANPAY?\n\nI *think* this would work, though it's a pretty obscure case where we\nwant to close out many HTLCs at once; this is more for fee bumping I\nthink.\n\nThere are two other cases where we don't rely on the TXID, and such an\napproach would be possible:\n\n1. Commitment tx with no HTLC outputs.\n2. The closing transaction.\n\nCheers,\nRusty."
+            }
+        ],
+        "thread_summary": {
+            "title": "Minutes of Dev Meeting 2017-07-10",
+            "categories": [
+                "Lightning-dev"
+            ],
+            "authors": [
+                "Rusty Russell"
+            ],
+            "messages_count": 2,
+            "total_messages_chars_count": 1741
+        }
+    }
+]

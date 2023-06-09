@@ -1,0 +1,174 @@
+[
+    {
+        "title": "[Lightning-dev] Minutes of Dev Meeting 2017-07-10",
+        "thread_messages": [
+            {
+                "author": "Olaoluwa Osuntokun",
+                "date": "2017-08-07T19:25:48",
+                "message_text_only": "> I think it does already:\n\nYep! An oversight on my part.\n\n> So, you're suggesting SIGHASH_SINGLE|SIGHASH_ANYONECANPAY?\n\nPrecisely. The code modifications required to switch to this signing mode\nare\ntrivial.\n\n> though it's a pretty obscure case where we want to close out many HTLCs at\n> once; this is more for fee bumping I think.\n\nWell it's for both. In the case of a commitment transaction broadcast (for\nwhat\never reason) each party is able to group together HTLC's expiring around the\nsame height (in the case that the pre-image for a bunch was never revealed.\nThis leads to less transactions on-chain, and lower fees cumulative for\neither\nside to sweep all funds back into their primary wallet.\n\nThe fee bumping use case is also a bonus!\n\n\nOn Sat, Jul 29, 2017 at 10:36 PM Rusty Russell <rusty at rustcorp.com.au>\nwrote:\n\n> Rusty Russell <rusty at rustcorp.com.au> writes:\n>\n> >\n> https://docs.google.com/document/d/1ng6FaOLGS7ZQEsv3kn6W-t2GzQShhD7eFPz-1yFQZm0/edit?usp=sharing\n>\n> Some feedback, since I missed what seems like a very productive\n> discussion!\n>\n> > HTLC floor created by second-level HTLC transactions\n> > Pierre points out that should choose HTLC min high enough that don\u2019t run\n> into issues.\n> > Laolu points out this means that unable to send and claim small-ish\n> amounts chain.\n> > Laolu points out that would basically CREATE a dust output in the\n> process.\n> > LAOLU SUGGESTS THAT TRIM OUTPUT SPEC PORTION SHOULD ALSO SAY DON\u2019T\n> CREATE DUST OUTPUT ON SECOND LEVEL TX\n>\n> I think it does already:\n>\n>   For every offered HTLC, if the HTLC amount minus the HTLC-timeout fee\n>   would be less than `dust_limit_satoshis` set by the transaction owner,\n>   the commitment transaction MUST NOT contain that output\n>\n> (Similarly for received HTLCs)\n>\n> ie. don't create HTLC outputs which would need an HTLC tx with a dust\n> output.\n>\n> > Don\u2019t use sighash-all on the second-level HTLC transactions\n> >   Laolu points out that this would allow us to coalesce many HTLC\n> >   transactions into a single one. Saves on-chain foot print, and also\n> >   allows to add more fees.  Basically like \u201cLighthouse\u201d (by hearn).\n>\n> So, you're suggesting SIGHASH_SINGLE|SIGHASH_ANYONECANPAY?\n>\n> I *think* this would work, though it's a pretty obscure case where we\n> want to close out many HTLCs at once; this is more for fee bumping I\n> think.\n>\n> There are two other cases where we don't rely on the TXID, and such an\n> approach would be possible:\n>\n> 1. Commitment tx with no HTLC outputs.\n> 2. The closing transaction.\n>\n> Cheers,\n> Rusty.\n>\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/lightning-dev/attachments/20170807/edb460af/attachment.html>"
+            },
+            {
+                "author": "Rusty Russell",
+                "date": "2017-08-08T00:52:16",
+                "message_text_only": "Olaoluwa Osuntokun <laolu32 at gmail.com> writes:\n>> I think it does already:\n>\n> Yep! An oversight on my part.\n>\n>> So, you're suggesting SIGHASH_SINGLE|SIGHASH_ANYONECANPAY?\n>\n> Precisely. The code modifications required to switch to this signing mode\n> are\n> trivial.\n\nAs per meeting discussion, we're in *NO CHANGES EXCEPT BUGFIXES* mode,\nso we've deferred this to 1.1 (implying a new feature bit).\n\nBut I've recorded it on the Wiki:\n\nhttps://github.com/lightningnetwork/lightning-rfc/wiki/Brainstorming\n\nThanks!\nRusty."
+            }
+        ],
+        "thread_summary": {
+            "title": "Minutes of Dev Meeting 2017-07-10",
+            "categories": [
+                "Lightning-dev"
+            ],
+            "authors": [
+                "Rusty Russell",
+                "Olaoluwa Osuntokun"
+            ],
+            "messages_count": 2,
+            "total_messages_chars_count": 3264
+        }
+    },
+    {
+        "title": "[Lightning-dev] [MINUTES] Dev Meeting 2017-07-10",
+        "thread_messages": [
+            {
+                "author": "Rusty Russell",
+                "date": "2017-08-08T02:03:03",
+                "message_text_only": "Nothing groundbreaking, but some PRs finally got merged :)\n\n        https://docs.google.com/document/d/1ng6FaOLGS7ZQEsv3kn6W-t2GzQShhD7eFPz-1yFQZm0/edit?usp=sharing\n\nCheers,\nRusty."
+            }
+        ],
+        "thread_summary": {
+            "title": "Dev Meeting 2017-07-10",
+            "categories": [
+                "Lightning-dev",
+                "MINUTES"
+            ],
+            "authors": [
+                "Rusty Russell"
+            ],
+            "messages_count": 1,
+            "total_messages_chars_count": 180
+        }
+    },
+    {
+        "title": "[Lightning-dev] Integration testing between implementations",
+        "thread_messages": [
+            {
+                "author": "Christian Decker",
+                "date": "2017-08-10T17:48:11",
+                "message_text_only": "I think it's safe to say that the protocol is now in feature freeze for\nversion v1.0 and we are limiting changes to bug fixes and clarifications.\nIn order to locate things that we might have interpreted differently and\nshow how far we are when it comes to interoperability I've been testing the\nthree implementations that are most active in the spec against each other.\n\nThe result is the lightning integration test suite [1]. It is still under\nconstruction but has already found a few bugs/inconsistencies among\nimplementations. I also took the liberty of publishing some of the test\nruns (annotated with enough metadata to reproduce them) [2] and will soon\nadd a nicer log view so that the cause of eventual failures is easier to\nspot, and add some more tests for various scenarios.\n\nI hope that this is a useful tool to check compatibility between\nimplementations, and I welcome any feedback or suggestions :-)\n\nCheers,\nChristian\n\n[1] https://github.com/cdecker/lightning-integration\n[2] https://cdecker.github.io/lightning-integration/\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/lightning-dev/attachments/20170810/ede9c67f/attachment-0001.html>"
+            }
+        ],
+        "thread_summary": {
+            "title": "Integration testing between implementations",
+            "categories": [
+                "Lightning-dev"
+            ],
+            "authors": [
+                "Christian Decker"
+            ],
+            "messages_count": 1,
+            "total_messages_chars_count": 1229
+        }
+    },
+    {
+        "title": "[Lightning-dev] Lightning in the setting of blockchain hardforks",
+        "thread_messages": [
+            {
+                "author": "Martin Schwarz",
+                "date": "2017-08-17T08:24:02",
+                "message_text_only": "Dear all,\n\ncurrently the chain_id allows to distinguish blockchains by the hash of\ntheir genesis block.\n\nWith hardforks branching off of the Bitcoin blockchain, how can Lightning\nwork on (or across)\ndistinct, permanent forks of a parent blockchain that share the same\ngenesis block?\n\nI suppose changing the definition of chain_id to the hash of the first\nblock of the new\nbranch and requiring replay and wipe-out protection should be sufficient.\nBut can we\nrelax these requirements? Are slow block times an issue? Can we use\nLightning to transact\non \"almost frozen\" block chains suffering from a sudden loss of hashpower?\n\nHas there been any previous discussion or study of Lightning in the setting\nof hardforks?\n(Is this the right place to discuss this? If not, where would be the right\nplace?)\n\nthanks,\nMartin\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/lightning-dev/attachments/20170817/6f4f0ddc/attachment.html>"
+            },
+            {
+                "author": "Martin Schwarz",
+                "date": "2017-08-17T08:53:22",
+                "message_text_only": "Dear all,\n\ncurrently the chain_id allows to distinguish blockchains by the hash of\ntheir genesis block.\n\nWith hardforks branching off of the Bitcoin blockchain, how can Lightning\nwork on (or across)\ndistinct, permanent forks of a parent blockchain that share the same\ngenesis block?\n\nI suppose changing the definition of chain_id to the hash of the first\nblock of the new\nbranch and requiring replay and wipe-out protection should be sufficient.\nBut can we\nrelax these requirements? Are slow block times an issue? Can we use\nLightning to transact\non \"almost frozen\" block chains suffering from a sudden loss of hashpower?\n\nHas there been any previous discussion or study of Lightning in the setting\nof hardforks?\n(Is this the right place to discuss this? If not, where would be the right\nplace?)\n\nthanks,\nMartin\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/lightning-dev/attachments/20170817/a68ca5d6/attachment.html>"
+            },
+            {
+                "author": "Christian Decker",
+                "date": "2017-08-17T10:39:54",
+                "message_text_only": "Hi Martin,\n\nthis is the perfect venue to discuss this, welcome to the mailing list :-)\nLike you I think that using the first forked block as the forkchain's\ngenesis block is the way to go, keeping the non-forked blockchain on the\noriginal genesis hash, to avoid disruption. It may become more difficult in\nthe case one chain doesn't declare itself to be the forked chain.\n\nEven more interesting are channels that are open during the fork. In these\ncases we open a single channel, and will have to settle two. If no replay\nprotection was implemented on the fork, then we can use the last commitment\nto close the channel (updates should be avoided since they now double any\nintended effect), if replay protection was implemented then commitments\nbecome invalid on the fork, and people will lose money.\n\nFun times ahead :-)\n\nCheers,\nChristian\n\nOn Thu, Aug 17, 2017 at 10:53 AM Martin Schwarz <martin.schwarz at gmail.com>\nwrote:\n\n> Dear all,\n>\n> currently the chain_id allows to distinguish blockchains by the hash of\n> their genesis block.\n>\n> With hardforks branching off of the Bitcoin blockchain, how can Lightning\n> work on (or across)\n> distinct, permanent forks of a parent blockchain that share the same\n> genesis block?\n>\n> I suppose changing the definition of chain_id to the hash of the first\n> block of the new\n> branch and requiring replay and wipe-out protection should be sufficient.\n> But can we\n> relax these requirements? Are slow block times an issue? Can we use\n> Lightning to transact\n> on \"almost frozen\" block chains suffering from a sudden loss of hashpower?\n>\n> Has there been any previous discussion or study of Lightning in the\n> setting of hardforks?\n> (Is this the right place to discuss this? If not, where would be the right\n> place?)\n>\n> thanks,\n> Martin\n> _______________________________________________\n> Lightning-dev mailing list\n> Lightning-dev at lists.linuxfoundation.org\n> https://lists.linuxfoundation.org/mailman/listinfo/lightning-dev\n>\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/lightning-dev/attachments/20170817/fe757404/attachment.html>"
+            },
+            {
+                "author": "Rusty Russell",
+                "date": "2017-08-21T02:20:45",
+                "message_text_only": "Christian Decker <decker.christian at gmail.com> writes:\n> Hi Martin,\n>\n> this is the perfect venue to discuss this, welcome to the mailing list :-)\n> Like you I think that using the first forked block as the forkchain's\n> genesis block is the way to go, keeping the non-forked blockchain on the\n> original genesis hash, to avoid disruption. It may become more difficult in\n> the case one chain doesn't declare itself to be the forked chain.\n>\n> Even more interesting are channels that are open during the fork. In these\n> cases we open a single channel, and will have to settle two. If no replay\n> protection was implemented on the fork, then we can use the last commitment\n> to close the channel (updates should be avoided since they now double any\n> intended effect), if replay protection was implemented then commitments\n> become invalid on the fork, and people will lose money.\n\nI don't think 2x will have 2-way replay protection; if it gets anything\nit will be opt-in.\n\nBut yes, closing the channel on the fork is the Right Thing.  There's\nbeen discussion of a standalone \"salvage\" utility, which you'd supply\nall the keys and information you have and a connection to a full node,\nand it would try to get your money back.  Ideally, it would work with\nany of the implementations.\n\nPerhaps this is something to work on?  Christian, are you bored? :)\n\nCheers,\nRusty."
+            }
+        ],
+        "thread_summary": {
+            "title": "Lightning in the setting of blockchain hardforks",
+            "categories": [
+                "Lightning-dev"
+            ],
+            "authors": [
+                "Rusty Russell",
+                "Martin Schwarz",
+                "Christian Decker"
+            ],
+            "messages_count": 4,
+            "total_messages_chars_count": 5522
+        }
+    },
+    {
+        "title": "[Lightning-dev] [MINUTES] Dev Meeting 2017-08-21",
+        "thread_messages": [
+            {
+                "author": "Rusty Russell",
+                "date": "2017-08-22T00:49:30",
+                "message_text_only": "Highlights:\n\n- BOLT 10 (DNS seed) got merged, you can try it now at Christian\n  Decker's node  (dig lseed.bitcoinstats.com gives you some random\n  testnet nodes).\n\n- Recommendations for 'bitcoin:' URI key and 'lightning:' URI included\n  in BOLT 11.\n\n- No core protocol changes this week :)\n\nhttps://docs.google.com/document/d/1K4QnOy0koZ_ndKltledRrvN-Zu4JDFXT8S9GGxFwjdw/edit?usp=sharing"
+            }
+        ],
+        "thread_summary": {
+            "title": "Dev Meeting 2017-08-21",
+            "categories": [
+                "Lightning-dev",
+                "MINUTES"
+            ],
+            "authors": [
+                "Rusty Russell"
+            ],
+            "messages_count": 1,
+            "total_messages_chars_count": 387
+        }
+    },
+    {
+        "title": "[Lightning-dev] Route finding and route generation",
+        "thread_messages": [
+            {
+                "author": "Billy Tetrud",
+                "date": "2017-08-22T01:08:50",
+                "message_text_only": "Hey Guys,\n\nI'm testing this mailing list out for the first time, so I'm probably gonna\nbe doing it wrong.\n\nI want to talk about route discovery and route generation in the lightning\nnetwork. It seems there's a couple types of things going on with routing:\n\n   - Super basic flood-the-network style routing to get things up and\n   running, as I believe is implicitly proposed here:\n   https://github.com/lightningnetwork/lightning-rfc/blob/master/07-routing-gossip.md\n   - More involved research projects that may not reach fruition any time\n   soon. Eg this:\n   http://bitfury.com/content/5-white-papers-research/whitepaper_flare_an_approach_to_routing_in_lightning_network_7_7_2016.pdf\n\nI'd like to discuss a near-term approach that can replace the basic\nflood-the-network style route discovery, but isn't so complicated that it\nneeds a ton of study and work. This won't be the end-all solution to route\ndiscovery, but should take us a lot further than flood-the-network.\n\nI propose a protocol where each node knows about its own local network\ntopology, and to find a final route, a transaction originator queries a\nnumber of its connections for routes to the intended destination. By doing\nthis, it means that nodes are *not* receiving or storing the entire network\ntopology, which makes route discovery a lot less taxing on the network (in\nterms of bandwidth and storage space).\n\nTo go into more detail...\n\nWhen a node joins the network:\n1. it broadcasts its information to all its channels (pretty much as\nproposed here\n<https://github.com/lightningnetwork/lightning-rfc/blob/master/07-routing-gossip.md>)\nannouncing its relevant channel information\n2. it requests local network topology information from all its channels for\ninformation about channels 1 hop beyond its direct connection (ie it will\nreceive information about which addresses those channels are connected to,\nand their related fee info / etc)\n3. it then requests topology information for channels 2 hops beyond, etc\nuntil it has filled its cache to its satisfaction (the user can choose some\namount of megabytes as its limit of network topology data to store)\n4. it also subscribes to topology changes for nodes at those distances (eg\nif a node has requested information from 3 hops away, it will receive info\nabout any new channels or removed channels that fall within that distance)\n\nWhen a node receives an announcement message from a node joining the\nnetwork:\n1. it will store that node's info in its cache\n2. it will also forward that info to any node that's subscribed to topology\nchanges that fall within the relevant distance\n\nWhen a node wants to construct a route for a transaction:\n1. It checks to see if it has a path to that node in its cache. If it does,\nit finds the cost of the cheapest path it has.\n2. It asks all the channels on the edge of its cached local view for their\ncheapest path (however you want to define cheapest), specifying that it\nonly care about paths with a maximum cost of the cheapest path it has\nalready found in its cache. For example, if the node has nodes up to 3 hops\naway in its cache, it will *only* ask the nodes 3 hops away (it will not\nask its direct connections, nor nodes 2 hops away, since it already has\nenough information to ignore them)\n3. When it gets all its responses, it constructs a path\n\nWhen a node receives a path request from a node:\n1. It checks its cache for its cheapest cache-only path\n2. It asks nodes on the edge of its cached local view for their cheapest\npath, specifying that it only cares about paths with a maximum cost of\neither its cheapest cache-only path or the max-cost specified by the\nrequesting node minus the channel cost between it and the requesting node\n(whichever is cheaper). A node on the edge of its cached local view is\n*not* asked for route information if the cost to that node exceeds the\nmax-cost this relay node would specify.\n3. It reports the results that satisfy the max-cost requirements of the\nrequesting node\n\nAnd that's it. All the route information can be encrypted and signed so\nrelaying nodes can't read the information inside, and so the requesting\nsource node can verify which nodes sent that information.\n\nThis protocol should keep both node-announcement messages *and* route\nrequest messages highly localized.\n\nThoughts?\n\n~BT\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/lightning-dev/attachments/20170821/c3f18091/attachment-0001.html>"
+            }
+        ],
+        "thread_summary": {
+            "title": "Route finding and route generation",
+            "categories": [
+                "Lightning-dev"
+            ],
+            "authors": [
+                "Billy Tetrud"
+            ],
+            "messages_count": 1,
+            "total_messages_chars_count": 4492
+        }
+    },
+    {
+        "title": "[Lightning-dev] BOLT 11, real time micro payments, and route redundancy",
+        "thread_messages": [
+            {
+                "author": "Andy Schroder",
+                "date": "2017-08-30T03:30:50",
+                "message_text_only": "Hello,\n\nI'm looking through BOLT 11. I don't really see an option for a refund \naddress like is present in BIP 70. Is this intentional? If so, why do \nyou not see that people would possibly want to receive a refund?\n\nI'm trying to adapt my fuel pump \n(http://andyschroder.com/BitcoinVendingDevices/) to use lightening and \nit requires a refund address because their is a pre-payment required. \nChange is then immediately returned at the end of the sale for any \nunused credit. An alternative is for one's automobile to do real time \nmicro pre-payments, but I'm not sure that the latency of a lightening \npayment will be low enough and the bandwidth requirement might be too \nexpensive. It would likely also require people's automobiles to measure \nthe product delivered and have an on board wallet. This would be ideal \nlong term, but I'm not sure if it is realistic at this time.\n\nAlso, assuming that a real time micropayment is doable at the automobile \nlevel, what happens if one of your hops goes down in the middle of the \nproduct delivery? Can there be automatic alternate/redundant fail over \nroutes like happens with IP traffic? It seems like this could be \ndifficult with onion routing.\n\nWith all that being said, even if real time micro payments can be a \nreality, I still see many of other unrelated use cases where there may \nbe a refund desired. I think that's why they put a refund address option \nin BIP 70.\n\nAny information would be greatly appreciated.\n\nThanks,\n\n-- \nAndy Schroder\n\n\n-------------- next part --------------\nA non-text attachment was scrubbed...\nName: signature.asc\nType: application/pgp-signature\nSize: 490 bytes\nDesc: OpenPGP digital signature\nURL: <http://lists.linuxfoundation.org/pipermail/lightning-dev/attachments/20170829/44950e02/attachment.sig>"
+            }
+        ],
+        "thread_summary": {
+            "title": "BOLT 11, real time micro payments, and route redundancy",
+            "categories": [
+                "Lightning-dev"
+            ],
+            "authors": [
+                "Andy Schroder"
+            ],
+            "messages_count": 1,
+            "total_messages_chars_count": 1786
+        }
+    }
+]

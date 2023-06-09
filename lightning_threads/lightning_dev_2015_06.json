@@ -1,0 +1,115 @@
+[
+    {
+        "title": "[Lightning-dev] hello",
+        "thread_messages": [
+            {
+                "author": "gb",
+                "date": "2015-06-23T05:23:15",
+                "message_text_only": "lightning"
+            }
+        ],
+        "thread_summary": {
+            "title": "hello",
+            "categories": [
+                "Lightning-dev"
+            ],
+            "authors": [
+                "gb"
+            ],
+            "messages_count": 1,
+            "total_messages_chars_count": 9
+        }
+    },
+    {
+        "title": "[Lightning-dev] Routing and explicit trust",
+        "thread_messages": [
+            {
+                "author": "Benjamin",
+                "date": "2015-06-23T10:36:32",
+                "message_text_only": "Hello,\n\nI find the paper very interesting. There is quite a few things I don't\nunderstand. In the the paper there are the terms \"channel\ncounterparty\" and \"clearinghouse\". What is exactly the risk to this\ncounterparty and why would it be trustless to route through that\nparty? How would users of the network find and select those\nintermediaries? I think in general building trust-based level 2\nprotocols is a good idea - it's not clear to me how it would work\nwithout explicit trust. Opening a channel is similar to declaring - I\ntrust this counterparty X up to amount Y. If X disappears then the\nrisk is capped at Y.\n\nIn the existing banking and monetary system counterparty risk can be\nminimized by shifting unwanted exposures. The problems are often more\nin the systematic risk, such as a failure of a banking system as a\nwhole. If counterparties are interconnected, failures can propagate in\nunexpected ways. For example A might trust B to route or clear and not\ntrust C. But B might have exposure to C, so that A's exposure can't be\ndiversified.\n\nRegards,\nBenjamin\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/lightning-dev/attachments/20150623/517af0bb/attachment.html>"
+            },
+            {
+                "author": "Rusty Russell",
+                "date": "2015-06-23T10:41:09",
+                "message_text_only": "Benjamin <benjamin.l.cordes at gmail.com> writes:\n> Hello,\n>\n> I find the paper very interesting. There is quite a few things I don't\n> understand. In the the paper there are the terms \"channel\n> counterparty\" and \"clearinghouse\".\n\nHi!  Note the list move...\n\nI described it a while ago in my blog series, culminating here:\n\n        http://rusty.ozlabs.org/?p=477\n\n> What is exactly the risk to this counterparty and why would it be\n> trustless to route through that party?\n\nThey can delay the payment until it times out, or force you to flush to\nthe blockchain (and wait for the timeout).\n\n> How would users of the network find and select those intermediaries?\n\nThat's an open question, and one I'm about to start a conversation on\nwith CJP (author of Amiko pay) on the new list.\n\nThanks!\nRusty."
+            },
+            {
+                "author": "sickpig at gmail.com",
+                "date": "2015-06-23T10:56:15",
+                "message_text_only": "On 23 Jun 2015 12:41, \"Rusty Russell\" <rusty at rustcorp.com.au> wrote:\n\n>\n> That's an open question, and one I'm about to start a conversation on\n> with CJP (author of Amiko pay) on the new list.\n\nwe're already on the new list or am I missing something?\n\n> Thanks!\n> Rusty.\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/lightning-dev/attachments/20150623/ac137566/attachment.html>"
+            },
+            {
+                "author": "Adam Back",
+                "date": "2015-06-23T11:27:37",
+                "message_text_only": "Actually you are right, this is the new list lightning-dev hosted by\nlinuxfoundation.org.  (Well technically the new new list, but who's\ncounting:)\n\nThe interesting thing (back to your question) is as Rusty said the hub\ncannot actually steal your money at all, only delay it, so it's mostly\ntrustless.  Other than some sort of time-preference cost, where\ndifferent people maybe more or less impacted by time-pressure\ndepending on access to other funds.\n\nAdam\n\nOn 23 June 2015 at 12:56, sickpig at gmail.com <sickpig at gmail.com> wrote:\n>\n> On 23 Jun 2015 12:41, \"Rusty Russell\" <rusty at rustcorp.com.au> wrote:\n>\n>>\n>> That's an open question, and one I'm about to start a conversation on\n>> with CJP (author of Amiko pay) on the new list.\n>\n> we're already on the new list or am I missing something?\n>\n>> Thanks!\n>> Rusty.\n>\n>\n> _______________________________________________\n> Lightning-dev mailing list\n> Lightning-dev at lists.linuxfoundation.org\n> https://lists.linuxfoundation.org/mailman/listinfo/lightning-dev\n>"
+            },
+            {
+                "author": "Rusty Russell",
+                "date": "2015-06-23T11:32:37",
+                "message_text_only": "\"sickpig at gmail.com\" <sickpig at gmail.com> writes:\n> On 23 Jun 2015 12:41, \"Rusty Russell\" <rusty at rustcorp.com.au> wrote:\n>\n>>\n>> That's an open question, and one I'm about to start a conversation on\n>> with CJP (author of Amiko pay) on the new list.\n>\n> we're already on the new list or am I missing something?\n\nYes, you were one of the early subscribers.  Welcome :)\n\nBut last I looked there were only a 15 of us, so I'll wait a bit longer\nbefore starting real discussion.\n\nThanks,\nRusty."
+            },
+            {
+                "author": "sickpig at gmail.com",
+                "date": "2015-06-23T12:15:18",
+                "message_text_only": "On Tue, Jun 23, 2015 at 1:32 PM, Rusty Russell <rusty at rustcorp.com.au> wrote:\n> \"sickpig at gmail.com\" <sickpig at gmail.com> writes:\n>> we're already on the new list or am I missing something?\n>\n> Yes, you were one of the early subscribers.  Welcome :)\n\nthanks Rusty\n\n> But last I looked there were only a 15 of us, so I'll wait a bit longer\n> before starting real discussion.\n\nsure, makes perfect sense."
+            }
+        ],
+        "thread_summary": {
+            "title": "Routing and explicit trust",
+            "categories": [
+                "Lightning-dev"
+            ],
+            "authors": [
+                "Rusty Russell",
+                "Benjamin",
+                "Adam Back",
+                "sickpig at gmail.com"
+            ],
+            "messages_count": 6,
+            "total_messages_chars_count": 4435
+        }
+    },
+    {
+        "title": "[Lightning-dev] Payment Re-routing",
+        "thread_messages": [
+            {
+                "author": "Stephen",
+                "date": "2015-06-27T03:45:41",
+                "message_text_only": "Quick question on the security of the Lightning Network when rerouting payments. \n\nSay A wants to make a payment to E, and they find a payment channel route through A->B->C->E. The payment is done in increments of 0.01 BTC until the full 1 BTC has been paid. However, part way through the payments, C becomes unresponsive. The contract has already been given to C that guarantees payment if C can produce the pre-image of a certain hash, and C does receive the pre-image from E. They do not share that pre-image with B, though. C must reveal the pre-image, either to B directly or on the blockchain, before B's contract times out, which guarantees B will receive payment. \n\nBut A has not paid the full amount to E yet when C became unresponsive. A wants to re-route her payment to avoid delays, so she re-routes the rest of the payments through A->B->D->E. A finishes the payments through this alternate route. But now, can't C reveal the pre-image to B, who then reveals it to A? Which, will effectively steal an extra 0.01 BTC from Alice and give it to E. (C and E could have been colluding to do this, splitting the profits). \n\nIs there something that prevents this that I do not see yet, or is this just the risk one takes with payment re-routing?\n\nThanks!\nStephen"
+            },
+            {
+                "author": "Rusty Russell",
+                "date": "2015-06-27T05:30:53",
+                "message_text_only": "Stephen <stephencalebmorse at gmail.com> writes:\n> Quick question on the security of the Lightning Network when rerouting payments. \n\nHi Stephen,\n\n        This is a good question!\n\n> Say A wants to make a payment to E, and they find a payment channel route through A->B->C->E. The payment is done in increments of 0.01 BTC until the full 1 BTC has been paid. However, part way through the payments, C becomes unresponsive. The contract has already been given to C that guarantees payment if C can produce the pre-image of a certain hash, and C does receive the pre-image from E. They do not share that pre-image with B, though. C must reveal the pre-image, either to B directly or on the blockchain, before B's contract times out, which guarantees B will receive payment. \n>\n> But A has not paid the full amount to E yet when C became unresponsive. A wants to re-route her payment to avoid delays, so she re-routes the rest of the payments through A->B->D->E. A finishes the payments through this alternate route. But now, can't C reveal the pre-image to B, who then reveals it to A? Which, will effectively steal an extra 0.01 BTC from Alice and give it to E. (C and E could have been colluding to do this, splitting the profits). \n\nEach of the messages needs a separate preimage.\n\nThe simplest method is for E to simply provide A with (say) 100 hashes\nto use as she wishes.\n\nThough I think we can do better than this using crypto rather than\nhashes, in practice producing 100 preimages is pretty easy (hash a\nper-payment secret + counter).\n\nCheers,\nRusty."
+            },
+            {
+                "author": "Rusty Russell",
+                "date": "2015-06-27T06:41:04",
+                "message_text_only": "Rusty Russell <rusty at rustcorp.com.au> writes:\n> Stephen <stephencalebmorse at gmail.com> writes:\n>> Quick question on the security of the Lightning Network when rerouting payments. \n>\n> Hi Stephen,\n>\n>         This is a good question!\n>\n>> Say A wants to make a payment to E, and they find a payment channel route through A->B->C->E. The payment is done in increments of 0.01 BTC until the full 1 BTC has been paid. However, part way through the payments, C becomes unresponsive. The contract has already been given to C that guarantees payment if C can produce the pre-image of a certain hash, and C does receive the pre-image from E. They do not share that pre-image with B, though. C must reveal the pre-image, either to B directly or on the blockchain, before B's contract times out, which guarantees B will receive payment. \n>>\n>> But A has not paid the full amount to E yet when C became unresponsive. A wants to re-route her payment to avoid delays, so she re-routes the rest of the payments through A->B->D->E. A finishes the payments through this alternate route. But now, can't C reveal the pre-image to B, who then reveals it to A? Which, will effectively steal an extra 0.01 BTC from Alice and give it to E. (C and E could have been colluding to do this, splitting the profits). \n>\n> Each of the messages needs a separate preimage.\n\nOops, sorry.  Scrap my dumb non-answer, I read your post properly now.\n\nYes, C can just get the preimage from E and collude to steal the funds,\nwhich is a nasty failure mode.\n\nDelaying the entire payment is a poor option; can anyone see a better\none?\n\nCheers,\nRusty."
+            },
+            {
+                "author": "Stephen Morse",
+                "date": "2015-06-30T04:59:43",
+                "message_text_only": "Hi Rusty,\n\nOn Sat, Jun 27, 2015 at 2:41 AM, Rusty Russell <rusty at rustcorp.com.au>\nwrote:\n\n>\n> Yes, C can just get the preimage from E and collude to steal the funds,\n> which is a nasty failure mode.\n>\n>\nThis scenario may even happen non-maliciously, if C has an honest outage\nand attempts to pick up where it left off on each of its channels. To fix\nthe non-malicious case, C could get a refund from E (a new signed\ntransaction with a lower lock time), if C knows he has been offline for\nlonger than B's willingness to wait before re-routing. But this isn't\nperfect, or even good, because E cannot know that C isn't just trying to\nget a refund even though they have taken the payment from B. In fact, C is\nguaranteed the payment from B, since they have the pre-image.\n\n\n> Delaying the entire payment is a poor option; can anyone see a better\n> one?\n>\n\nLike you say, delaying the payment seems like a bad way to go, as then the\npayments wouldn't be quite \"Lightning\" fast anymore. 99% of the payment\ncould be re-routed though. Perhaps the 99% could be re-routed, while A\nwaits for C to rejoin. Or if multiple paths are being used to process the\npayment, just redistribute the remaining payments allotted for the broken\npath among the other functioning paths.\n\nThe bigger problem here seems to be that the incentives are slightly skewed\nin favor of dishonestly. One can minimize the impact of that dishonesty by\nbreaking the payment into smaller chunks and across diverse paths, but this\ncomes at the cost of bandwidth and speed. Some sort of a rating system\ncould come into play possibly, if nothing can be cryptographically worked\nout.\n\nBest,\nStephen\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/lightning-dev/attachments/20150630/536271bb/attachment.html>"
+            },
+            {
+                "author": "Rusty Russell",
+                "date": "2015-06-30T08:03:00",
+                "message_text_only": "Stephen Morse <stephencalebmorse at gmail.com> writes:\n> Hi Rusty,\n>\n> On Sat, Jun 27, 2015 at 2:41 AM, Rusty Russell <rusty at rustcorp.com.au>\n> wrote:\n>\n>> Yes, C can just get the preimage from E and collude to steal the funds,\n>> which is a nasty failure mode.\n>>\n> This scenario may even happen non-maliciously, if C has an honest outage\n> and attempts to pick up where it left off on each of its channels.\n\nIndeed.\n\nOff-list, Joseph Poon suggested a solution, which I urged him to post\nhere.  As he hasn't done so, I'll try to paraphrase.\n\nSo the basic problem is that A -> C -> E fails because C is\nunresponsive: A is waiting (say) 2 days before the HTLC to C times out.\n\nJoseph's solution is that E can route a conditional refund back to A\nwith a larger timeout (say 3 days) via some other route: this pays back\nthe amount to A if they present the preimage for the initial stalled\npayment and another preimage A only has.  This serves as a guarantee\nthat E will not reveal the preimage required to take the stalled\npayment.\n\nThis raises other questions, such as who would pay E (and any other\nintermediate nodes) for locking up their money for such a time.  Could A\nprovide evidence that the route really had timed out?  How many times\ncan A claim \"payment failed\"?  etc.\n\nIn general, how nodes get paid is an open question; I'll add this to the\npile.  One problem at a time though...\n\nCheers,\nRusty."
+            }
+        ],
+        "thread_summary": {
+            "title": "Payment Re-routing",
+            "categories": [
+                "Lightning-dev"
+            ],
+            "authors": [
+                "Rusty Russell",
+                "Stephen Morse",
+                "Stephen"
+            ],
+            "messages_count": 5,
+            "total_messages_chars_count": 7685
+        }
+    }
+]

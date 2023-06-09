@@ -1,0 +1,55 @@
+[
+    {
+        "title": "[Lightning-dev] Hello",
+        "thread_messages": [
+            {
+                "author": "Cezary Dziemian",
+                "date": "2017-10-08T20:21:15",
+                "message_text_only": "Hello,\n\nI joined list a week ago mostly in order to be up to date with everything\nwhat is going on around LN. Didn't receive any mail yet and don't know the\nreason. There was no discussion here for last week or maybe something is\nwrong? Could you please let me know?\n\nCD\n\n<https://www.avast.com/sig-email?utm_medium=email&utm_source=link&utm_campaign=sig-email&utm_content=webmail>\nWolny\nod wirus\u00f3w. www.avast.com\n<https://www.avast.com/sig-email?utm_medium=email&utm_source=link&utm_campaign=sig-email&utm_content=webmail>\n<#DAB4FAD8-2DD7-40BB-A1B8-4E2AA1F9FDF2>\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/lightning-dev/attachments/20171008/8750a71e/attachment.html>"
+            },
+            {
+                "author": "Ricardo Filipe",
+                "date": "2017-10-08T22:30:55",
+                "message_text_only": "The mailing list has an archive where you can check the existing\ndiscussion. And no, there was no discussion on-list since the 19th Sep.\n\n2017-10-08 21:21 GMT+01:00 Cezary Dziemian <cezary.dziemian at gmail.com>:\n\n> Hello,\n>\n> I joined list a week ago mostly in order to be up to date with everything\n> what is going on around LN. Didn't receive any mail yet and don't know the\n> reason. There was no discussion here for last week or maybe something is\n> wrong? Could you please let me know?\n>\n> CD\n>\n>\n> <https://www.avast.com/sig-email?utm_medium=email&utm_source=link&utm_campaign=sig-email&utm_content=webmail> Wolny\n> od wirus\u00f3w. www.avast.com\n> <https://www.avast.com/sig-email?utm_medium=email&utm_source=link&utm_campaign=sig-email&utm_content=webmail>\n> <#m_6913381475386566712_DAB4FAD8-2DD7-40BB-A1B8-4E2AA1F9FDF2>\n>\n> _______________________________________________\n> Lightning-dev mailing list\n> Lightning-dev at lists.linuxfoundation.org\n> https://lists.linuxfoundation.org/mailman/listinfo/lightning-dev\n>\n>\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/lightning-dev/attachments/20171008/941762b1/attachment.html>"
+            },
+            {
+                "author": "Cezary Dziemian",
+                "date": "2017-10-09T09:45:48",
+                "message_text_only": "Thank you, looks everything is fine.\n\n2017-10-09 0:30 GMT+02:00 Ricardo Filipe <ricardojdfilipe at gmail.com>:\n\n> The mailing list has an archive where you can check the existing\n> discussion. And no, there was no discussion on-list since the 19th Sep.\n>\n> 2017-10-08 21:21 GMT+01:00 Cezary Dziemian <cezary.dziemian at gmail.com>:\n>\n>> Hello,\n>>\n>> I joined list a week ago mostly in order to be up to date with everything\n>> what is going on around LN. Didn't receive any mail yet and don't know the\n>> reason. There was no discussion here for last week or maybe something is\n>> wrong? Could you please let me know?\n>>\n>> CD\n>>\n>>\n>> <https://www.avast.com/sig-email?utm_medium=email&utm_source=link&utm_campaign=sig-email&utm_content=webmail> Wolny\n>> od wirus\u00f3w. www.avast.com\n>> <https://www.avast.com/sig-email?utm_medium=email&utm_source=link&utm_campaign=sig-email&utm_content=webmail>\n>> <#m_-6982108808315408962_m_6913381475386566712_DAB4FAD8-2DD7-40BB-A1B8-4E2AA1F9FDF2>\n>>\n>> _______________________________________________\n>> Lightning-dev mailing list\n>> Lightning-dev at lists.linuxfoundation.org\n>> https://lists.linuxfoundation.org/mailman/listinfo/lightning-dev\n>>\n>>\n>\n-------------- next part --------------\nAn HTML attachment was scrubbed...\nURL: <http://lists.linuxfoundation.org/pipermail/lightning-dev/attachments/20171009/260f41be/attachment-0001.html>"
+            }
+        ],
+        "thread_summary": {
+            "title": "Hello",
+            "categories": [
+                "Lightning-dev"
+            ],
+            "authors": [
+                "Cezary Dziemian",
+                "Ricardo Filipe"
+            ],
+            "messages_count": 3,
+            "total_messages_chars_count": 3331
+        }
+    },
+    {
+        "title": "[Lightning-dev] BOLT 3 use of unallocated/reserved nLockTime & nSequence space",
+        "thread_messages": [
+            {
+                "author": "Mark Friedenbach",
+                "date": "2017-10-16T09:41:29",
+                "message_text_only": "It was brought to my attention that BOLT 3 does a cute trick to encode the commitment transaction number split across the transaction\u2019s nLockTime and the input\u2019s nSequence number. This trick uses up 7.34% of the currently unallocated but usable space in nLockTime, and a truly negligible 0.78% of the unallocated but usable space of nSequence. I did a quick search of the bitcoin developer mailing list archives and was not able to see any discussion of this application-specific usage of the reserved space of these two fields.\n\nPersonally I think this is a reasonable compromise to make, to allow the BOLT 3 design to save 6 vbytes per transaction. There are probably other applications too which would benefit from 24 bits of data storage in either nLockTime or nSequence. However with my protocol engineer hat on I should point out that moving forward over time it is not necessarily the case that these bits will be available for use. Just as a significant range of nSequence was set aside for relative lock-time in BIP 68, it is entirely possible that future protocol upgrades will make use of this space. It is unlikely that such a change would break existing lightning transactions since, like BIP 68, such new features would be gated by a transaction version number update. But it would mean that such new features would be incompatible with lightning transactions without a change to BOLT 3.\n\nI would suggest that those involved in crafting the BOLT 3 specification put forward a proposal to the bitcoin developer community to allocate this space for data storage, thereby protecting it from future protocol changes, as well as being polite in letting the wider developer community know what reserved space lightning is using.\n\nCheers,\nMark Friedenbach"
+            }
+        ],
+        "thread_summary": {
+            "title": "BOLT 3 use of unallocated/reserved nLockTime & nSequence space",
+            "categories": [
+                "Lightning-dev"
+            ],
+            "authors": [
+                "Mark Friedenbach"
+            ],
+            "messages_count": 1,
+            "total_messages_chars_count": 1762
+        }
+    }
+]
