@@ -4,22 +4,26 @@ const path = require('path');
 const { NDKEvent, NDKPrivateKeySigner, NDKUser } = require('@nostr-dev-kit/ndk');
 const NDK = require('@nostr-dev-kit/ndk').default;
 
-
 const SLEEP_DELAY = 100; // ms delay between actions
+const BITCOIN_DIR = 'bitcoin_threads';
+const LIGHTNING_DIR = 'lightning_threads';
+const KEYS_AND_FLAGS_FILENAME = 'keys_and_flags.json';
+const LN_AUTHORS_FILENAME = 'authors_dict_ln.json';
+const AUTHORS_FILENAME = 'authors_dict.json';
 
 // Define a sleep function
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 // Load bitcoin authors data
-let rawdata = fs.readFileSync(path.join(__dirname, 'bitcoin_threads', 'authors_dict.json'));
+let rawdata = fs.readFileSync(path.join(__dirname, BITCOIN_DIR, AUTHORS_FILENAME));
 let authors = JSON.parse(rawdata);
 
 // Load LN authors data
-let ln_rawdata = fs.readFileSync(path.join(__dirname, 'lightning_threads', 'authors_dict_ln.json'));
+let ln_rawdata = fs.readFileSync(path.join(__dirname, LIGHTNING_DIR, LN_AUTHORS_FILENAME));
 let ln_authors = JSON.parse(ln_rawdata);
 
 // Define relay list
-const relays = [
+const prod_relays = [
     "wss://eden.nostr.land",
     "wss://nostr.mutinywallet.com",
     "wss://puravida.nostr.land",
@@ -32,10 +36,17 @@ const relays = [
     "wss://relay.nostrati.com",
 ];
 
+// Define relay list
+const test_relays = [
+    "wss://no.str.cr"
+];
+
+const relays = prod_relays
+
 // Load existing keys and flags, if they exist
 let keysAndFlags = {};
 try {
-    keysAndFlags = JSON.parse(fs.readFileSync('keys_and_flags.json'));
+    keysAndFlags = JSON.parse(fs.readFileSync(KEYS_AND_FLAGS_FILENAME));
 } catch (error) {
     console.error(`Failed to load keys_and_flags.json: ${error.message}`);
 }
@@ -52,7 +63,7 @@ async function processAuthors() {
     await ndk.connect().then(async () => {
         for (let author of allAuthors) {
             // Only process if broadcasted flag is false or undefined
-            if (!keysAndFlags[author]?.broadcasted) {
+            if (!keysAndFlags[author]?.broadcasted || new Date(keysAndFlags[author].lastMessageDate) < new Date(getLastMessageDate(author))) {
                 let signer;
                 // If privateKey is present in JSON, use it
                 if (keysAndFlags[author]?.privateKey) {
@@ -66,7 +77,7 @@ async function processAuthors() {
                 const event = createNDKEvent(author, signer);
 
                 console.log(event)
-                //await event.publish();
+                await event.publish();
                 
                 await sleep(SLEEP_DELAY);
 
@@ -75,10 +86,11 @@ async function processAuthors() {
                     privateKey: signer.privateKey,
                     publicKey: signer._user.npub, 
                     broadcasted: true,
+                    lastMessageDate: getLastMessageDate(author),
                     relays: relays
                 };
 
-                fs.writeFileSync('keys_and_flags.json', JSON.stringify(keysAndFlags));
+                fs.writeFileSync(KEYS_AND_FLAGS_FILENAME, JSON.stringify(keysAndFlags));
             } else {
                 console.log(`Profile update for ${author} has already been broadcasted. Skipping...`);
             }

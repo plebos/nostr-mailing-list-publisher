@@ -1,24 +1,36 @@
 const fs = require('fs');
 const path = require('path');
-const { NDKEvent, NDKPrivateKeySigner, NDKUser} = require('@nostr-dev-kit/ndk');
+
+const { NDKEvent, NDKPrivateKeySigner, NDKUser } = require('@nostr-dev-kit/ndk');
+
+const { nip19 } = require("nostr-tools");
+const { arch } = require('os');
+
 const NDK = require('@nostr-dev-kit/ndk').default;
 
+const LIST_CHOOSER = 'bitcoin';
+
 // Constants
-const ARCHIVE_USERNAME_KEY = "Lightning mailing archive";
-const DIR = 'lightning_threads';
+const ARCHIVE_USERNAME_KEY = `${LIST_CHOOSER.charAt(0).toUpperCase() + LIST_CHOOSER.slice(1)} mailing archive`;
+console.log(ARCHIVE_USERNAME_KEY);
+
+//const ARCHIVE_USERNAME_KEY = "TEST1";
+const ARCHIVE_DETAILS_USERNAME_KEY = "Conversation Details"
+const DIR = `${LIST_CHOOSER}_threads`;
 const START_YEAR = 2015;
 const END_YEAR = 2023;
-const THREADS_CHECKPOINTS_FILE = 'ln_checkpoints_1.json';
+//const THREADS_CHECKPOINTS_FILE = 'ln_checkpoints_2.json';
 const SLEEP_DELAY = 100; // ms delay between actions
-const KEYS_AND_FLAGS_FILE = 'keys_and_flags_1.json';
+const KEYS_AND_FLAGS_FILE = 'keys_and_flags.json';
 const RELAYS = [
+    "wss://no.str.cr",
+    "wss://relay.damus.io",
     "wss://eden.nostr.land",
     "wss://nostr.mutinywallet.com",
     "wss://puravida.nostr.land",
     "wss://purplepag.es/",
     "wss://relay.nostrgraph.net/",
     "wss://nostr.bitcoiner.social",
-    "wss://no.str.cr",
     "wss://nostr.inosta.cc",
     "wss://nostr.oxtr.dev",
     "wss://relay.nostrati.com"
@@ -40,25 +52,33 @@ try {
     keysAndFlags = {};
 }
 
-// Generate a new signer for the "Lightning mailing archive", or load from keys_and_flags.json if exists
-let archiveSigner;
-if (keysAndFlags[ARCHIVE_USERNAME_KEY]?.privateKey) {
-    const privateKey = keysAndFlags[ARCHIVE_USERNAME_KEY].privateKey;
-    archiveSigner = new NDKPrivateKeySigner(privateKey);
-} else {
-    archiveSigner = NDKPrivateKeySigner.generate();
-    keysAndFlags[ARCHIVE_USERNAME_KEY] = {
-        privateKey: archiveSigner.privateKey,
-        publicKey: archiveSigner._user.npub,
-        broadcasted: true,
-        relays: ndk.explicitRelayUrls
-    };
-    try {
-        fs.writeFileSync(KEYS_AND_FLAGS_FILE, JSON.stringify(keysAndFlags));
-    } catch (err) {
-        console.error('Error writing to file', err);
+function getArchiveSigner(usernameKey) {
+    let archiveSigner;
+    if (keysAndFlags[usernameKey]?.privateKey) {
+        const privateKey = keysAndFlags[usernameKey].privateKey;
+        archiveSigner = new NDKPrivateKeySigner(privateKey);
+    } else {
+        archiveSigner = NDKPrivateKeySigner.generate();
+        keysAndFlags[usernameKey] = {
+            privateKey: archiveSigner.privateKey,
+            publicKey: archiveSigner._user.npub,
+            broadcasted: true,
+            relays: ndk.explicitRelayUrls
+        };
+        try {
+            fs.writeFileSync(KEYS_AND_FLAGS_FILE, JSON.stringify(keysAndFlags));
+        } catch (err) {
+            console.error('Error writing to file', err);
+        }
     }
+    return archiveSigner;
 }
+
+let archiveSigner = getArchiveSigner(ARCHIVE_USERNAME_KEY);
+console.log(archiveSigner);
+
+let archiveDetailsSigner = getArchiveSigner(ARCHIVE_DETAILS_USERNAME_KEY);
+console.log(archiveDetailsSigner);
 
 // Function to connect to NDK
 async function ndk_connect() {
@@ -71,46 +91,60 @@ async function generateArchiveAccount() {
     const event = new NDKEvent(ndk);
     event.kind = 0; // 0 for profile event
     event.content = JSON.stringify({
-        name: "Lightning Mailing List",
+        name: ARCHIVE_USERNAME_KEY,
         about: "This account operates as a mirror of the Lightning mailing list"
     });
-
-    await event.publish();
-    await sleep(SLEEP_DELAY);
+    console.log("PUBLISH ARCHIVE")
+    await publishEvent(event)
 }
 
-// Helper to get checkpoints from file, or initialize as an empty set if file doesn't exist
-function getCheckpoints(checkpointsFile) {
-    if (fs.existsSync(checkpointsFile)) {
-        const rawData = fs.readFileSync(checkpointsFile);
-        return new Set(JSON.parse(rawData));
-    }
-    return new Set();
+// Function to generate a Nostr account for the mailing list archive
+async function generateArchiveDetailsAccount() {
+    ndk.signer = archiveDetailsSigner; // Set the default signer to the archiveSigner
+    const event = new NDKEvent(ndk);
+    event.kind = 0; // 0 for profile event
+    event.content = JSON.stringify({
+        name: ARCHIVE_DETAILS_USERNAME_KEY,
+        about: "This account operates as a mailing list threads details publisher"
+    });
+    console.log("PUBLISH ARCHIVE DETAILS")
+    await publishEvent(event)
 }
-
 // Helper to get the path of the JSON file for a given month, or null if none exists
 function getMonthlyFile(year, month) {
-    const extendedFile = path.join(DIR, `lightning_dev_${year}_${month}_extended.json`);
-    const regularFile = path.join(DIR, `lightning_dev_${year}_${month}.json`);
+    const extendedFile = path.join(DIR, `${LIST_CHOOSER}_dev_${year}_${month}.json`);
+    console.log(extendedFile)
+    //const regularFile = path.join(DIR, `lightning_dev_${year}_${month}.json`);
     if (fs.existsSync(extendedFile)) {
         return extendedFile;
-    } else if (fs.existsSync(regularFile)) {
-        return regularFile;
+        //}
+        //} else if (fs.existsSync(regularFile)) {
+        //    return regularFile;
     } else {
         return null;
     }
 }
 
+function createBackupFile(originalFile) {
+    const backupFile = originalFile.replace('.json', '_backup_before_publish.json');
+    fs.copyFileSync(originalFile, backupFile);
+    console.log(`Created backup file: ${backupFile}`);
+    return backupFile;
+}
+
+
 // Function to process a month of threads
 async function processMonth(year, month) {
     console.log(year, month);
-    const checkpoints = getCheckpoints(THREADS_CHECKPOINTS_FILE);
     const file = getMonthlyFile(year, month);
     if (file) {
         const threads = JSON.parse(fs.readFileSync(file));
+        createBackupFile(file)
         for (let thread of threads) {
-            console.log(`Processing thread ${thread.thread_summary.title}`)
-            await processThread(thread, checkpoints)
+            if (thread.new || thread.has_new_messages) {
+                console.log(`Processing thread ${thread.thread_summary.title}`)
+                await processThread(thread, file)
+            }
         }
     }
 }
@@ -125,69 +159,194 @@ async function handleAllMonths() {
     }
 }
 
-
 // Function to process a thread
-async function processThread(thread, checkpoints) {
-    const threadEvent = await createAndPublishThreadEvent(thread, checkpoints);
-    //console.log(threadEvent.content)
-    let prevMessageId = threadEvent.id;  
-    let prevMessageAuthor = ARCHIVE_USERNAME_KEY;
+async function processThread(thread, fileName) {
+    let threadEventId = ''
+    let prevMessageId = ''
+    let prevMessageAuthor = ARCHIVE_USERNAME_KEY
 
-    // Process the messages in the thread
-    for (let message of thread.thread_messages) {
-        console.log(`Processing message by ${message.author} on ${message.date}`);
-        await sleep(SLEEP_DELAY)
-        // Process a single message
-        let messageEvent = await processMessage(message, prevMessageId, threadEvent.id, prevMessageAuthor);
-
-        // Update the ID and author of the last message
-        prevMessageId = messageEvent.id;
-        prevMessageAuthor = message.author;
+    if (thread.new) {
+        const threadEvent = await createAndPublishThreadEvent(thread);
+        threadEventId = threadEvent.id;
+        updateThreadInJsonFile(thread.id, fileName, threadEventId)
+    } else if (thread.has_new_messages) {
+        threadEventId = thread.published_note_id
+        let summaryEvent = await createAndPublishThreadSummaryEvent(thread);
+    } else {
+        return;
     }
+
+    prevMessageId = threadEventId;
+
+    // Process the new messages in the thread
+    for (let message of thread.thread_messages) {
+        // Process a single message
+        if (message.new) {
+            console.log(`Processing message by ${message.author} on ${message.date}`);
+            let messageEvent = await processMessage(message, prevMessageId, threadEventId, prevMessageAuthor);
+            // Update the ID and author of the last message
+            updateMessageInJsonFile(thread.id, message.id, fileName, messageEvent.id)
+            prevMessageId = messageEvent.id;
+            prevMessageAuthor = message.author;
+        } else {
+            prevMessageId = message.published_note_id;
+            prevMessageAuthor = message.author;
+        }
+    }
+    // set has new messages flag to false
+    updateThreadInJsonFile(thread.id, fileName, threadEventId, true)
 }
 
+
+// Function to update a message in the thread in the json file
+function updateMessageInJsonFile(threadId, messageId, fileName, publishedNoteId) {
+    let threads = JSON.parse(fs.readFileSync(fileName));
+    const threadIndex = threads.findIndex(t => t.id === threadId);
+    console.log("HERE")
+    console.log(messageId)
+    if (threadIndex !== -1) {
+        const messageIndex = threads[threadIndex].thread_messages.findIndex(m => m.id === messageId);
+        if (messageIndex !== -1) {
+            // Update the message's id with the newEventId if it doesn't exist or it's empty
+            if (!threads[threadIndex].thread_messages[messageIndex].published_note_id || threads[threadIndex].thread_messages[messageIndex].published_note_id === '') {
+                threads[threadIndex].thread_messages[messageIndex].published_note_id = publishedNoteId;
+            }
+            // update as not new
+            threads[threadIndex].thread_messages[messageIndex].new = false;
+        }
+    }
+    fs.writeFileSync(fileName, JSON.stringify(threads));
+}
+
+
+// Function to update the thread in the json file
+function updateThreadInJsonFile(threadId, fileName, publishedNoteId, newMessagesHandled = false) {
+    let threads = JSON.parse(fs.readFileSync(fileName));
+    const index = threads.findIndex(t => t.id === threadId);
+    console.log("HERE")
+    console.log(threadId)
+    if (index !== -1) {
+        // Update the thread's id with the newEventId if it doesn't exist or it's empty
+        if (!threads[index].published_note_id || threads[index].published_note_id === '') {
+            threads[index].published_note_id = publishedNoteId;
+        }
+        if (newMessagesHandled) {
+            threads[index].has_new_messages = false;
+        }
+        // Mark new as false
+        threads[index].new = false;
+    }
+    fs.writeFileSync(fileName, JSON.stringify(threads));
+}
+
+
 // Function to create and publish a thread event
-async function createAndPublishThreadEvent(thread, checkpoints) {
+async function createAndPublishThreadEvent(thread) {
+
+
+    await createAndPublishThreadSummaryEvent(thread);
+
     ndk.signer = archiveSigner;
     let threadEvent = new NDKEvent(ndk);
     threadEvent.kind = 1;
 
-    let contentString = composeThreadContent(thread);
-    let authorTags = getAuthorTags(thread.thread_summary.authors);
+    threadEvent.content = composeThreadContent(thread);
+    threadEvent.tags = getAllThreadTags(thread);
 
-    threadEvent.content = contentString;
-    threadEvent.tags = authorTags;
-
-    threadEvent.sign()
-    await publishEvent(threadEvent, checkpoints);
+    await publishEvent(threadEvent);
     return threadEvent;
 }
+
+// Function to create and publish a thread event
+async function createAndPublishThreadSummaryEvent(thread) {
+
+    let authors = thread.thread_summary.authors;
+    let messages_count = thread.thread_summary.messages_count;
+    let total_chars = thread.thread_summary.total_messages_chars_count;
+    let convo_summary = thread.thread_summary.convo_summary;
+    let dates = thread.thread_messages.map(message => new Date(message.date));
+    let min_date = new Date(Math.min.apply(null, dates));
+    let max_date = new Date(Math.max.apply(null, dates));
+
+    let contentString = ``;
+
+    let threadSummaryTags = [];
+    threadSummaryTags.push(['d', thread.id])
+    //threadSummaryTags.push(['d', 123123])
+    threadSummaryTags.push(['title', "Conversation Details"])
+    //threadSummaryTags.push(['published_at', (Math.floor(Date.now() / 1000)).toString()])
+    threadSummaryTags.push(['image', 'https://nostr.build/i/dbc5bd7993c8d036431edeefea63a2b3b796e1f49baf96bf6b09e13c8c662833.jpg'])
+    
+
+    if (convo_summary) {
+        contentString += `📝 Summary: ${convo_summary}\n\n`
+    }
+    contentString += `👥 Authors: ${getAuthorsList(authors)}\n\n`;
+    contentString += getMessageDateRange(min_date, max_date);
+    contentString += `\n`;
+    contentString += `✉️ Message Count: ${messages_count}\n\n`;
+    contentString += `📚 Total Characters in Messages: ${total_chars}\n\n`;
+
+    // Checking if any message contains a summary
+    if (thread.thread_messages.some(message => message.summary)) {
+        contentString += `## Messages Summaries\n`;
+
+        // Adding individual message summaries to the content string
+        thread.thread_messages.forEach(message => {
+            if (message.summary) {
+                contentString += `\n✉️ Message by ${message.author} on ${new Date(message.date).toLocaleDateString()}:\n${message.summary}\n`;
+            }
+        });
+    }
+
+    contentString += `\n\nFollow nostr:${archiveSigner._user.npub} for full threads`;
+
+    ndk.signer = archiveDetailsSigner;
+    let threadSummaryEvent = new NDKEvent(ndk);
+    threadSummaryEvent.kind = 30023;
+    threadSummaryEvent.tags = [...threadSummaryTags, ...getAuthorTags(authors)];
+    threadSummaryEvent.tags.push(['p',archiveSigner._user.hexpubkey()])
+    threadSummaryEvent.content = contentString;
+    await publishEvent(threadSummaryEvent)
+    return threadSummaryEvent;
+}
+
 
 // Function to compose the content of a thread event
 function composeThreadContent(thread) {
     let title = thread.thread_summary.title;
     let categories = thread.thread_summary.categories.join(', ');
-    let authors = thread.thread_summary.authors;
-    let messages_count = thread.thread_summary.messages_count;
-    let total_chars = thread.thread_summary.total_messages_chars_count;
-    let convo_summary = thread.thread_summary.convo_summary;
+    //let authors = thread.thread_summary.authors;
+    //let messages_count = thread.thread_summary.messages_count;
+    //let total_chars = thread.thread_summary.total_messages_chars_count;
+    //let convo_summary = thread.thread_summary.convo_summary;
 
-    let dates = thread.thread_messages.map(message => new Date(message.date));
-    let min_date = new Date(Math.min.apply(null, dates));
-    let max_date = new Date(Math.max.apply(null, dates));
+    //let dates = thread.thread_messages.map(message => new Date(message.date));
+    //let min_date = new Date(Math.min.apply(null, dates));
+    //let max_date = new Date(Math.max.apply(null, dates));
 
     let contentString = `🔖 Title: ${title}\n`;
     contentString += `🏷️ Categories: ${categories}\n`;
-    contentString += `👥 Authors: ${getAuthorsList(authors)}\n`;
+    //contentString += `👥 Authors: ${getAuthorsList(authors)}\n`;
 
-    if (convo_summary) {
-        contentString += `🗒️ Conversation Summary: ${convo_summary}\n`;
-    }
 
-    contentString += getMessageDateRange(min_date, max_date);
-    contentString += `✉️ Message Count: ${messages_count}\n`;
-    contentString += `📚 Total Characters in Messages: ${total_chars}\n`;
+    //contentString += `🗒️ Conversation Summary: ${convo_summary}\n`;
+    //contentString += `🗒️ Conversation Summary: \n`;
 
+    //console.log(thread)
+    //console.log(threadSigner)
+    let result = nip19.naddrEncode({
+        identifier: thread.id,
+        pubkey: archiveDetailsSigner._user.hexpubkey(),
+        kind: 30023,
+        relays: RELAYS.slice(0, 3) // Take the first three relay URLs 
+    });
+    contentString += ` nostr:${result} \n`;
+
+    //contentString += getMessageDateRange(min_date, max_date);
+    //contentString += `✉️ Message Count: ${messages_count}\n`;
+    //contentString += `📚 Total Characters in Messages: ${total_chars}\n`;
+    contentString += `⚠️ Heads up! We've now started linking to replaceable long-form events (NIP-23), which allow for dynamic display of thread details like summaries, authors, and more. If you're unable to see this, your client may not support this feature yet.`
     return contentString;
 }
 
@@ -213,10 +372,26 @@ function getAuthorDetail(author) {
     return `${author} ( nostr:${keysAndFlags[author].publicKey} )`;
 }
 
+
+function getAllThreadTags(thread) {
+    let summaryTags = getSummaryTags(thread);
+    //We moved authorTags to the summary (it can change over time)
+    //let authorTags = getAuthorTags(thread.thread_summary.authors);
+    return summaryTags;
+}
+
+// Function to get the summary tags for a thread
+function getSummaryTags(thread) {
+    let summaryTags = [];
+
+    summaryTags.push(['a', `30023:${archiveDetailsSigner._user.hexpubkey()}:${thread.id}`, RELAYS[0]])
+
+    return summaryTags;
+}
 // Function to get the author tags for a thread
 function getAuthorTags(authors) {
     let authorTags = [];
-    
+
     for (let author of authors) {
         let ndkUser = new NDKUser({ npub: keysAndFlags[author].publicKey });
         let pubkey = ndkUser.hexpubkey();
@@ -236,20 +411,20 @@ function getMessageDateRange(min_date, max_date) {
 }
 
 // Function to publish an event and update checkpoints
-async function publishEvent(event, checkpoints) {
-    await event.sign()
-    if (!checkpoints.has(event.id)) {
-        try {
-            event.publish()
-            checkpoints.add(event.id);
-            // Save checkpoints to file immediately
-            let checkpointsArray = Array.from(checkpoints);
-            fs.writeFileSync(THREADS_CHECKPOINTS_FILE, JSON.stringify(checkpointsArray));
+async function publishEvent(event) {
 
-            await sleep(SLEEP_DELAY);
-        } catch (error) {
-            console.log(`Error while publishing event: ${error.message}`);
-        }
+    try {
+        await event.sign()
+        console.log(`PUBLISH EVENT ${event.id}`)
+        console.log(`PUBLISH EVENT ${JSON.stringify(event)}`);
+        event.publish()
+        //checkpoints.add(hahedContents);
+        // Save checkpoints to file immediately
+        //let checkpointsArray = Array.from(checkpoints);
+        //fs.writeFileSync(THREADS_CHECKPOINTS_FILE, JSON.stringify(checkpointsArray));
+        await sleep(SLEEP_DELAY);
+    } catch (error) {
+        console.log(`Error while publishing event: ${error.message}`);
     }
 }
 
@@ -260,8 +435,7 @@ async function processMessage(message, prevMessageId, threadEventId, prevMessage
 
     // Set message tags
     setMessageTags(messageEvent, prevMessageId, threadEventId, prevMessageAuthor);
-    console.log(messageEvent.tags)
-    
+
     try {
         // Set signer
         setSigner(message.author);
@@ -273,13 +447,9 @@ async function processMessage(message, prevMessageId, threadEventId, prevMessage
     // Set content
     let messageContent = composeMessageContent(message);
     messageEvent.content = messageContent;
-    messageEvent.sign();
-
     // Publish the message
-    
-    await messageEvent.publish();
-    await sleep(SLEEP_DELAY)
 
+    await publishEvent(messageEvent)
     return messageEvent
 }
 
@@ -322,17 +492,17 @@ function composeMessageContent(message) {
 
     messageContent += `📝 Original message:\n`;
     messageContent += message.message_text_only;
-    
+
     return messageContent;
 }
 
 
-
-
 // Main function to execute all tasks
 async function main() {
+    //const checkpoints = getCheckpoints(THREADS_CHECKPOINTS_FILE);
     await ndk_connect();
-    await generateArchiveAccount();
+    // await generateArchiveAccount();
+    await generateArchiveDetailsAccount();
     await handleAllMonths();
 }
 
