@@ -27,7 +27,7 @@ const prod_relays = [
     "wss://eden.nostr.land",
     "wss://nostr.mutinywallet.com",
     "wss://puravida.nostr.land",
-    "wss://purplepag.es/",
+    //"wss://purplepag.es/",
     "wss://relay.nostrgraph.net/",
     "wss://nostr.bitcoiner.social",
     "wss://no.str.cr",
@@ -156,5 +156,5 @@ function getCategories(author) {
 
 // Call the async function to process the authors
 processAuthors().catch(error => {
-    console.error(`Error while processing authors: ${error.message}`);
+    console.error(`Error while processing authors: ${error}`);
 });

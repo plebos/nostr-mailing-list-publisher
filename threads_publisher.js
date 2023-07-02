@@ -28,7 +28,7 @@ const RELAYS = [
     "wss://eden.nostr.land",
     "wss://nostr.mutinywallet.com",
     "wss://puravida.nostr.land",
-    "wss://purplepag.es/",
+    //"wss://purplepag.es/",
     "wss://relay.nostrgraph.net/",
     "wss://nostr.bitcoiner.social",
     "wss://nostr.inosta.cc",
